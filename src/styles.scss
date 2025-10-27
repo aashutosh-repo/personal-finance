@@ -1,1 +1,16 @@
-/* You can add global styles to this file, and also import other style files */
+/* ✅ Load the prebuilt Material theme */
+@use '@angular/material' as mat;
+
+/* ✅ Optional: if you want custom theme later, you can define it here */
+@include mat.core();
+
+/* ✅ Include a prebuilt Material theme (choose one) */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+/* ✅ Basic global resets */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: #f5f5f5;
+}

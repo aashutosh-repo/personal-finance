@@ -1,0 +1,12 @@
+<div *ngIf="isBrowser">
+  <canvas baseChart
+          [data]="chartData"
+          chartType="pie"
+          [options]="{
+            responsive: true,
+            plugins: {
+              legend: { position: 'right' }
+            }
+          }">
+  </canvas>
+</div>

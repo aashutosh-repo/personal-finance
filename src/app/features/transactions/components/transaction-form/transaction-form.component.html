@@ -1,0 +1,43 @@
+<form [formGroup]="transactionForm" (ngSubmit)="submit()" class="transaction-form">
+
+  <div class="form-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>Amount Spent</mat-label>
+      <input matInput type="number" formControlName="txnAmount" placeholder="Enter amount" />
+      <mat-error *ngIf="transactionForm.get('txnAmount')?.hasError('required')">
+        Amount is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Type of Expense</mat-label>
+      <mat-select formControlName="expenseCategory" placeholder="Select expense type">
+        <mat-option *ngFor="let type of expenseTypes" [value]="type">{{ type }}</mat-option>
+      </mat-select>
+      <mat-error *ngIf="transactionForm.get('expenseCategory')?.hasError('required')">
+        Expense type is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Description</mat-label>
+      <input matInput formControlName="description" placeholder="Enter short description" />
+      <mat-error *ngIf="transactionForm.get('description')?.hasError('required')">
+        Description is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Date of Expense</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="dateOfExpense" />
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+  </div>
+
+  <div class="btn-container">
+    <button mat-raised-button color="primary" type="submit" [disabled]="transactionForm.invalid">
+      Add Expense
+    </button>
+  </div>
+</form>

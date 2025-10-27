@@ -1,0 +1,55 @@
+<header class="page-header">
+  <mat-toolbar color="primary" class="mat-elevation-z4 page-header">
+  <span class="ms-2">Daily Tracker</span>
+
+  <span class="spacer"></span>
+  <nav class="desktop-nav">
+    <a mat-button>Home</a>
+    <a mat-button>Documentation</a>
+    <a mat-button>Shortcut</a>
+    <a mat-button>About Us</a>
+  </nav>
+  <nav class="mobile-nav mobile-nav-dropdown" *ngIf="isExpanded">
+          <mat-option value="home">Home</mat-option>
+          <mat-option value="docs">Documentation</mat-option>
+          <mat-option value="shortcut">Shortcut</mat-option>
+          <mat-option value="about">About Us</mat-option>
+</nav>
+
+<!-- Hamburger icon / button to open mobile nav -->
+<button class="hamburger" (click)="toggleMenu()" *ngIf="isExpanded">
+  ☰
+</button>
+    <!-- <div class="mobile-nav">
+      <mat-form-field appearance="outline" class="nav-dropdown">
+        <mat-select placeholder="Menu" (selectionChange)="onMenuSelect($event.value)">
+          <mat-option value="home">Home</mat-option>
+          <mat-option value="docs">Documentation</mat-option>
+          <mat-option value="shortcut">Shortcut</mat-option>
+          <mat-option value="about">About Us</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div> -->
+    <button mat-button class="login-button" *ngIf="!authService.isLoggedIn()" (click)="openLoginDialog()">
+      Login
+    </button>
+  <!-- <div class="username-container" (click)="toggleUserDetails()" >
+    <span class="username"></span>
+    <img src="assets/icons/user-icon.svg" alt="User Icon"  class="user-icon"/>
+  </div> -->
+    <div class="username-container" *ngIf="authService.isLoggedIn()" (click)="toggleUserDetails()">
+      <!-- <span class="username">{{ userDetails?.userName }}</span> -->
+      <img src="assets/icons/user-icon.svg" alt="User Icon" class="user-icon"/>
+    </div>
+  @if (showUserDetails) {
+    <div class="user-details-dropdown">
+      <p><strong>USERID:</strong> {{ userDetails?.userName }}</p>
+      <p><strong>NAME:</strong> {{ userDetails?.firstName }} {{ userDetails?.lastName }}</p>
+      <p><strong>LAST LOGIN:</strong> {{ userDetails?.lastLogin | date: 'short' }}</p>
+    </div>
+  }
+</mat-toolbar>
+
+<!-- Navigation Panel (for smaller screens) -->
+
+</header>

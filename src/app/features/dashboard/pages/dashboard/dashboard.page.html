@@ -1,0 +1,27 @@
+<!-- <div class="dashboard-container">
+  <div class="stats">
+    <div class="stat-card">
+      <h3>Total Expenses</h3>
+      <p>{{ totalExpenses | currency:'INR' }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>Total Investment</h3>
+      <p>{{ totalInvestment | currency:'INR' }}</p>
+    </div>
+    <div class="stat-card">
+      <h3>Total Debt</h3>
+      <p>{{ totalDebt | currency:'INR' }}</p>
+    </div>
+  </div>
+</div> -->
+
+<div class="app-container">
+  <app-sidebar (menuSelect)="onMenuSelect($event)"></app-sidebar> 
+   <div class="content">
+    <app-dashboard *ngIf="selectedPage === 'Dashboard'"></app-dashboard>
+    <app-transaction-form *ngIf="selectedPage === 'Transaction'"></app-transaction-form>
+    <div *ngIf="selectedPage !== 'Dashboard' && selectedPage !== 'Transaction'" class="coming-soon">
+      <p>Feature "{{ selectedPage }}" will be implemented later.</p>
+    </div>
+  </div> 
+</div>

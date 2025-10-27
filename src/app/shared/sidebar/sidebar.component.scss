@@ -1,0 +1,38 @@
+.sidebar {
+  width: 200px;
+  padding: 10px;
+  border-right: 1px solid #ccc;
+  height: 80vh;
+  box-sizing: border-box;
+  background-color: #f9f9f9;
+}
+
+@media (max-width: 600px) {
+  .sidebar {
+    width: 140px;
+    padding: 10px;
+    border-right: 1px solid #ccc;
+    height: 100%;
+    box-sizing: border-box;
+    background-color: #f9f9f9;
+  }
+}
+
+.menu-item {
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.menu-item:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.menu-item.active {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+}
