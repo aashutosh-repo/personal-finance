@@ -21,3 +21,22 @@ export interface UserResponse {
     lastLogin?: string;
     expiryTime?: string;
 }
+
+export interface RegistrationRequest {
+  email: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+  userName?: string;
+}
+
+export interface RegistrationResponse {
+  success: boolean;
+  message: string;
+  user?: {
+    id: number;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+  };
+}

@@ -13,6 +13,13 @@ import { MatFormFieldModule, MatLabel } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 // import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -32,5 +39,12 @@ export const SharedMaterialModules = [
   MatInputModule,
   MatRadioModule,
   MatSelectModule,
+  MatTabsModule,
+  MatSnackBarModule,
+  MatProgressSpinnerModule,
+  MatDatepickerModule,
+  MatNativeDateModule,
+  MatTooltipModule,
+  MatProgressBarModule,
   ReactiveFormsModule
 ];

@@ -16,7 +16,7 @@ export class TransactionService {
     return this.http.post<Transaction>(this.baseUrl, tx);
   }
 
-  getExpensesByUser(userId: number): Observable<Transaction[]> {
+  getExpensesByUser(userId: string): Observable<Transaction[]> {
     return this.http.get<Transaction[]>(`${this.baseUrl}/user/${userId}`);
   }
 
@@ -28,7 +28,11 @@ export class TransactionService {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 
-   calculateTotals(userId: number): Observable<{ totalExpense: number; totalInvestment: number; totalDebt: number }> {
+  updateExpense(id: number, tx: Transaction): Observable<Transaction> {
+    return this.http.put<Transaction>(`${this.baseUrl}/${id}`, tx);
+  }
+
+   calculateTotals(userId: string): Observable<{ totalExpense: number; totalInvestment: number; totalDebt: number }> {
     return this.getExpensesByUser(userId).pipe(
       map(transactions => {
         let totalExpense = 0;

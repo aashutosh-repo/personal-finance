@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { inject, Injectable, PLATFORM_ID } from "@angular/core";
-import { LoginRequest, LoginResponse } from "../../../model/loginRequest.model";
+import { LoginRequest, LoginResponse, RegistrationRequest, RegistrationResponse } from "../../../model/loginRequest.model";
 import { BehaviorSubject, catchError, Observable, tap, throwError } from "rxjs";
 import { isPlatformBrowser } from "@angular/common";
 import { BrowserStorageService } from "./BrowserStorageService.service";
@@ -37,6 +37,20 @@ export class AuthService {
       );
   }
 
+  register(registrationData: RegistrationRequest): Observable<RegistrationResponse> {
+    return this.http.post<RegistrationResponse>(`${this.BASE_URL}/register`, registrationData,
+      {withCredentials: true}
+    )
+      .pipe(
+        tap(response => {
+          if (response.user) {
+            this.storage.set('registered_user', JSON.stringify(response.user));
+          }
+        }),
+        catchError(this.handleError)
+      );
+  }
+
   getSessionItem(key: string): string | null {
     if (typeof window !== 'undefined') {
       return this.storage.get(key);
@@ -56,6 +70,12 @@ export class AuthService {
     const user = JSON.parse(userStr);
     return user.email.toString();
   }
+  getCurrentUserID(): string | null {
+    const userStr= this.storage.get('user');
+    if (!userStr) return null;
+    const user = JSON.parse(userStr);
+    return user.id.toString();
+  }
 
   /**
    * Save JWT token to localStorage
@@ -74,6 +94,18 @@ export class AuthService {
   /**
    * Logout and clear token
    */
+  logout(): Observable<any> {
+    return this.http.post(`${this.BASE_URL}/logout`, {}, {withCredentials: true})
+      .pipe(
+        tap(() => {
+          this.currentUserSubject.next(null);
+          this.storage.remove(this.TOKEN_KEY);
+          this.storage.remove('user');
+        }),
+        catchError(this.handleError)
+      );
+  }
+  
   // logout() {
   //   sessionStorage.removeItem(this.TOKEN_KEY);
   // }

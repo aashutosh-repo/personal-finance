@@ -1,0 +1,134 @@
+<div class="budget-container">
+  <mat-card class="budget-card">
+    <mat-card-header>
+      <mat-card-title>Budget Management</mat-card-title>
+      <button mat-raised-button color="primary" (click)="showAddForm ? resetForm() : showAddForm = true">
+        {{ showAddForm ? 'Cancel' : 'Add New Budget' }}
+      </button>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Add/Edit Form -->
+      <form [formGroup]="budgetForm" (ngSubmit)="onAddBudget()" *ngIf="showAddForm" class="budget-form">
+        <h3>{{ editingId ? 'Edit Budget' : 'Create New Budget' }}</h3>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Category</mat-label>
+            <mat-select formControlName="categoryId">
+              <mat-option value="1">Food & Dining</mat-option>
+              <mat-option value="2">Transportation</mat-option>
+              <mat-option value="3">Entertainment</mat-option>
+              <mat-option value="4">Shopping</mat-option>
+              <mat-option value="5">Utilities</mat-option>
+              <mat-option value="6">Education</mat-option>
+              <mat-option value="7">Health</mat-option>
+              <mat-option value="8">Other</mat-option>
+            </mat-select>
+            <mat-error>Category is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Budget Amount</mat-label>
+            <input matInput type="number" formControlName="budgetAmount" />
+            <mat-error>Budget Amount is required</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Month</mat-label>
+            <input matInput type="month" formControlName="month" />
+            <mat-error>Month is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Description</mat-label>
+            <input matInput formControlName="description" />
+          </mat-form-field>
+        </div>
+
+        <div class="button-group">
+          <button mat-raised-button color="primary" [disabled]="!budgetForm.valid || isLoading">
+            {{ editingId ? 'Update Budget' : 'Create Budget' }}
+          </button>
+          <button mat-raised-button type="button" (click)="resetForm()">Cancel</button>
+        </div>
+      </form>
+
+      <!-- Budget List -->
+      <div class="budget-list" *ngIf="!isLoading && budgets.length > 0">
+        <h3>Your Budgets</h3>
+        <mat-table [dataSource]="budgets" class="budget-table">
+          <!-- Category Column -->
+          <ng-container matColumnDef="category">
+            <mat-header-cell *matHeaderCellDef>Category</mat-header-cell>
+            <mat-cell *matCellDef="let element">{{ element.categoryName }}</mat-cell>
+          </ng-container>
+
+          <!-- Budget Amount Column -->
+          <ng-container matColumnDef="budgetAmount">
+            <mat-header-cell *matHeaderCellDef>Budget</mat-header-cell>
+            <mat-cell *matCellDef="let element">{{ element.budgetAmount | currency }}</mat-cell>
+          </ng-container>
+
+          <!-- Spent Amount Column -->
+          <ng-container matColumnDef="spentAmount">
+            <mat-header-cell *matHeaderCellDef>Spent</mat-header-cell>
+            <mat-cell *matCellDef="let element">{{ element.spentAmount | currency }}</mat-cell>
+          </ng-container>
+
+          <!-- Percentage Column -->
+          <ng-container matColumnDef="percentage">
+            <mat-header-cell *matHeaderCellDef>Used %</mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <mat-progress-bar [value]="element.percentageUsed" 
+                                [color]="element.isExceeded ? 'warn' : (element.percentageUsed > 80 ? 'accent' : 'primary')">
+              </mat-progress-bar>
+              {{ element.percentageUsed }}%
+            </mat-cell>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <span [ngClass]="getStatusClass(element)" class="status-badge">
+                {{ getStatusText(element) }}
+              </span>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <button mat-icon-button (click)="editBudget(element)" matTooltip="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteBudget(element.id)" matTooltip="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+        </mat-table>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!isLoading && budgets.length === 0 && !showAddForm">
+        <mat-icon>account_balance_wallet</mat-icon>
+        <p>No budgets created yet</p>
+        <button mat-raised-button color="primary" (click)="showAddForm = true">Create First Budget</button>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isLoading">
+        <mat-spinner [diameter]="40"></mat-spinner>
+        <p>Loading budgets...</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

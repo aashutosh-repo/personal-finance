@@ -1,7 +1,16 @@
-<div *ngIf="isBrowser" class="chart-wrapper">
-  <canvas baseChart
-          [data]="chartConfig"
-          [options]="chartOptions"
-          chartType="bar">
-  </canvas>
+<div class="chart-section">
+
+  <div class="totals">
+    <div class="total-card income">Total Income: ₹{{ totalExpenses | number }}</div>
+    <div class="total-card expense">Total Expense: ₹{{ totalIncome | number }}</div>
+  </div>
+
+  <div *ngIf="isBrowser" class="chart-wrapper">
+    <canvas baseChart
+      [data]="chartConfig"
+      [options]="chartOptions"
+      [plugins]="[customLegendPlugin]"
+      chartType="bar">
+    </canvas>
+  </div>
 </div>

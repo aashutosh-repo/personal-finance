@@ -1,0 +1,7 @@
+export enum IncomeSource {
+  SALARY = 'SALARY',
+  FREELANCE = 'FREELANCE',
+  BUSINESS = 'BUSINESS',
+  INVESTMENT = 'INVESTMENT',
+  OTHERS = 'OTHERS'
+}

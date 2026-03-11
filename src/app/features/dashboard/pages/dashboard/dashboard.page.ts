@@ -44,14 +44,20 @@ export class DashboardPage implements OnInit {
       if (!isPlatformBrowser(this.platformId)) {
         return;
       }
+      console.log("UseriD",this.authService.getCurrentUserID());
+      
     
     // console.log('User stored in session:', this.storage.get('user'));
-    const userName = this.authService.getCurrentUser();
-    this.txService.calculateTotals(1).subscribe(totals => {
-      this.totalExpenses = totals.totalExpense;
-      this.totalInvestment = totals.totalInvestment;
-      this.totalDebt = totals.totalDebt;
-    });  
+    const userId = this.authService.getCurrentUserID();
+    if(userId) {
+      this.txService.calculateTotals(userId).subscribe(totals => {
+        this.totalExpenses = totals.totalExpense;
+        this.totalInvestment = totals.totalInvestment;
+        this.totalDebt = totals.totalDebt;
+        console.log('Calculated Totals:', totals);
+      });
+      console.log("Total Expenses in Dashboard Page:",this.totalExpenses);
+    }  
   }
 
   

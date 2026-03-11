@@ -1,0 +1,156 @@
+<div class="profile-container">
+  <mat-card class="profile-card" *ngIf="userProfile">
+    <mat-tab-group>
+      <!-- Profile Tab -->
+      <mat-tab label="Profile Information">
+        <div class="profile-content">
+          <div class="profile-section">
+            <h3>Profile Picture</h3>
+            <div class="profile-picture-section">
+              <img *ngIf="profilePicturePreview" [src]="profilePicturePreview" alt="Profile Picture" class="profile-picture">
+              <mat-icon *ngIf="!profilePicturePreview" class="default-avatar">account_circle</mat-icon>
+              <div class="upload-section">
+                <input type="file" #fileInput hidden (change)="onProfilePictureSelected($event)" accept="image/*">
+                <button mat-raised-button (click)="fileInput.click()">Choose Photo</button>
+                <button mat-raised-button color="primary" (click)="uploadProfilePicture()" *ngIf="selectedFile" [disabled]="isLoading">
+                  Upload
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <form [formGroup]="profileForm">
+            <h3>Personal Information</h3>
+            
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>First Name</mat-label>
+                <input matInput formControlName="firstName" />
+                <mat-error>First Name is required</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Last Name</mat-label>
+                <input matInput formControlName="lastName" />
+                <mat-error>Last Name is required</mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Phone Number</mat-label>
+                <input matInput formControlName="phoneNumber" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Date of Birth</mat-label>
+                <input matInput type="date" formControlName="dateOfBirth" />
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Address</mat-label>
+                <input matInput formControlName="address" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>City</mat-label>
+                <input matInput formControlName="city" />
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Country</mat-label>
+                <input matInput formControlName="country" />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Currency</mat-label>
+                <mat-select formControlName="currency">
+                  <mat-option value="USD">USD ($)</mat-option>
+                  <mat-option value="EUR">EUR (€)</mat-option>
+                  <mat-option value="GBP">GBP (£)</mat-option>
+                  <mat-option value="INR">INR (₹)</mat-option>
+                  <mat-option value="JPY">JPY (¥)</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <button mat-raised-button color="primary" (click)="updateProfile()" [disabled]="!profileForm.valid || isLoading">
+              Save Profile
+            </button>
+          </form>
+        </div>
+      </mat-tab>
+
+      <!-- Password Tab -->
+      <mat-tab label="Security">
+        <div class="profile-content">
+          <h3>Change Password</h3>
+          
+          <button mat-raised-button (click)="showPasswordForm = !showPasswordForm" *ngIf="!showPasswordForm">
+            Change Password
+          </button>
+
+          <form [formGroup]="passwordForm" *ngIf="showPasswordForm">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Current Password</mat-label>
+              <input matInput type="password" formControlName="oldPassword" />
+              <mat-error *ngIf="passwordForm.get('oldPassword')?.hasError('required')">
+                Current password is required
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>New Password</mat-label>
+              <input matInput type="password" formControlName="newPassword" />
+              <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('required')">
+                New password is required
+              </mat-error>
+              <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">
+                Password must be at least 6 characters
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Confirm Password</mat-label>
+              <input matInput type="password" formControlName="confirmPassword" />
+              <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">
+                Please confirm your password
+              </mat-error>
+            </mat-form-field>
+
+            <mat-error *ngIf="passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmPassword')?.touched">
+              Passwords do not match
+            </mat-error>
+
+            <div class="button-group">
+              <button mat-raised-button color="primary" (click)="changePassword()" [disabled]="!passwordForm.valid || isPasswordChanging">
+                Update Password
+              </button>
+              <button mat-raised-button (click)="showPasswordForm = false">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </mat-tab>
+
+      <!-- Account Tab -->
+      <mat-tab label="Account">
+        <div class="profile-content">
+          <h3>Account Information</h3>
+          <p><strong>Email:</strong> {{ userProfile.email }}</p>
+          <p *ngIf="userProfile.emailVerified"><strong>Email Status:</strong> Verified ✓</p>
+          <p *ngIf="!userProfile.emailVerified"><strong>Email Status:</strong> Not Verified</p>
+          <p *ngIf="userProfile.createdAt"><strong>Member Since:</strong> {{ userProfile.createdAt | date: 'long' }}</p>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card>
+
+  <mat-card *ngIf="isLoading" class="loading-card">
+    <mat-spinner></mat-spinner>
+    <p>Loading profile...</p>
+  </mat-card>
+</div>

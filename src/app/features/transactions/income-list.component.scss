@@ -1,0 +1,220 @@
+.income-container {
+  padding: 20px;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.income-card {
+  max-width: 1000px;
+  margin: 0 auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  mat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  mat-card-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+  }
+}
+
+mat-card-content {
+  padding: 20px;
+}
+
+.income-form {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  border: 1px solid #ddd;
+
+  h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.form-field {
+  width: 100%;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  margin-top: 20px;
+}
+
+button[mat-raised-button] {
+  padding: 10px 20px;
+  font-weight: 600;
+  height: 48px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.income-list {
+  margin-top: 30px;
+
+  h3 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.income-table {
+  width: 100%;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  mat-header-cell {
+    font-weight: 600;
+    color: #333;
+    background-color: #f9f9f9;
+  }
+
+  mat-cell {
+    padding: 12px;
+  }
+
+  mat-row {
+    border-bottom: 1px solid #eee;
+
+    &:last-row {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+}
+
+.source-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  display: inline-block;
+
+  &.source-salary {
+    background-color: #cfe2ff;
+    color: #084298;
+  }
+
+  &.source-freelance {
+    background-color: #d1ecf1;
+    color: #0c5460;
+  }
+
+  &.source-business {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  &.source-investment {
+    background-color: #e2e3e5;
+    color: #383d41;
+  }
+
+  &.source-others {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #ccc;
+    margin-bottom: 20px;
+  }
+
+  p {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+
+  p {
+    margin-top: 20px;
+    color: #666;
+  }
+}
+
+@media (max-width: 768px) {
+  .income-container {
+    padding: 10px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  button[mat-raised-button] {
+    width: 100%;
+  }
+
+  .income-table {
+    font-size: 12px;
+
+    mat-cell,
+    mat-header-cell {
+      padding: 8px;
+    }
+
+    .source-badge {
+      font-size: 10px;
+      padding: 4px 8px;
+    }
+  }
+}

@@ -1,0 +1,118 @@
+<div class="income-container">
+  <mat-card class="income-card">
+    <mat-card-header>
+      <mat-card-title>Income Management</mat-card-title>
+      <button mat-raised-button color="primary" (click)="showAddForm ? resetForm() : showAddForm = true">
+        {{ showAddForm ? 'Cancel' : 'Add Income' }}
+      </button>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Add/Edit Form -->
+      <form [formGroup]="incomeForm" (ngSubmit)="onAddIncome()" *ngIf="showAddForm" class="income-form">
+        <h3>{{ editingId ? 'Edit Income' : 'Add New Income' }}</h3>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Source</mat-label>
+            <mat-select formControlName="source">
+              <mat-option *ngFor="let source of incomeSources" [value]="source">{{ source }}</mat-option>
+            </mat-select>
+            <mat-error>Source is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Amount</mat-label>
+            <input matInput type="number" step="0.01" formControlName="amount" />
+            <mat-error>Amount is required</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Date</mat-label>
+            <input matInput type="date" formControlName="date" />
+            <mat-error>Date is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Description</mat-label>
+            <input matInput formControlName="description" />
+          </mat-form-field>
+        </div>
+
+        <div class="button-group">
+          <button mat-raised-button color="primary" [disabled]="!incomeForm.valid || isLoading">
+            {{ editingId ? 'Update Income' : 'Add Income' }}
+          </button>
+          <button mat-raised-button type="button" (click)="resetForm()">Cancel</button>
+        </div>
+      </form>
+
+      <!-- Income List -->
+      <div class="income-list" *ngIf="!isLoading && incomes.length > 0">
+        <h3>Income Records</h3>
+        <mat-table [dataSource]="incomes" class="income-table">
+          <!-- Date Column -->
+          <ng-container matColumnDef="date">
+            <mat-header-cell *matHeaderCellDef>Date</mat-header-cell>
+            <mat-cell *matCellDef="let element">{{ element.date | date: 'short' }}</mat-cell>
+          </ng-container>
+
+          <!-- Source Column -->
+          <ng-container matColumnDef="source">
+            <mat-header-cell *matHeaderCellDef>Source</mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <span class="source-badge" [ngClass]="'source-' + element.source.toLowerCase()">
+                {{ element.source }}
+              </span>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Amount Column -->
+          <ng-container matColumnDef="amount">
+            <mat-header-cell *matHeaderCellDef>Amount</mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <strong>{{ element.amount | currency }}</strong>
+            </mat-cell>
+          </ng-container>
+
+          <!-- Description Column -->
+          <ng-container matColumnDef="description">
+            <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
+            <mat-cell *matCellDef="let element">{{ element.description || '-' }}</mat-cell>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <button mat-icon-button (click)="editIncome(element)" matTooltip="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteIncome(element.id)" matTooltip="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </mat-cell>
+          </ng-container>
+
+          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+        </mat-table>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!isLoading && incomes.length === 0 && !showAddForm">
+        <mat-icon>attach_money</mat-icon>
+        <p>No income records yet</p>
+        <button mat-raised-button color="primary" (click)="showAddForm = true">Add Income</button>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isLoading">
+        <mat-spinner [diameter]="40"></mat-spinner>
+        <p>Loading income...</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
