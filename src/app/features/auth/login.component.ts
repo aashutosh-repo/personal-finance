@@ -1,5 +1,5 @@
 import { Component, Inject, PLATFORM_ID } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { SharedMaterialModules } from '../../service/common/shared-material.module';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../service/auth/auth.service';
@@ -12,7 +12,7 @@ import { LoginResponse } from '../../../model/loginRequest.model';
 @Component({
   standalone: true,
   selector: 'app-login',
-  imports: [SharedMaterialModules],
+  imports: [SharedMaterialModules,RouterModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
@@ -43,7 +43,8 @@ onSubmit() {
       this.authService.login(this.loginForm.value).subscribe({
         next: (response) => {
           console.log('Login successful', response);
-          this.authService.saveToken(response.accessToken);
+          // Token is automatically saved as HttpOnly cookie by backend
+          // User data is saved in cookie by backend for JS access
           this.authService.setSessionItem('user', JSON.stringify(response.user));
           this.snackBar.open('Login successful!', 'OK', { duration: 3000 });
           this.router.navigate(['/v1/dashboard']); // redirect to home page
