@@ -67,7 +67,7 @@ export class RegisterComponent {
         next: (response) => {
           if (response.success) {
             this.snackBar.open('Registration successful! Please login with your credentials.', 'OK', { duration: 4000 });
-            this.router.navigate(['/v1/login']);
+            this.router.navigate(['/login']);
           } else {
             this.snackBar.open(response.message || 'Registration failed', 'Close', { duration: 4000 });
           }
