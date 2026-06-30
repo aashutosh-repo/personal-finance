@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule,RouterOutlet],
+  imports: [CommonModule, FormsModule, RouterOutlet],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -17,8 +17,7 @@ export class AppComponent {
 
   private iconRegistry = inject(MatIconRegistry);
   private sanitizer = inject(DomSanitizer);
-    private platformId = inject(PLATFORM_ID);
-    selectedPage: string = 'Dashboard'
+  private platformId = inject(PLATFORM_ID);
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
@@ -27,8 +26,5 @@ export class AppComponent {
         this.sanitizer.bypassSecurityTrustResourceUrl('assets/icons/user-icon.svg')
       );
     }
-  }
-  onMenuSelect(menu: string) {
-    this.selectedPage = menu;
   }
 }

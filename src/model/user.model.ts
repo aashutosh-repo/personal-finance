@@ -17,6 +17,19 @@ export interface UserProfile {
   emailVerified?: boolean;
 }
 
+export interface RegistrationRequest {
+  username: string;
+  fullName: string;
+  email: string;
+  password: string;
+  phone?: string;
+  countryCode: string;
+  currency?: string;
+  dateOfBirth?: string;
+  bio?: string;
+
+}
+
 export interface UpdateProfileRequest {
   firstName?: string;
   lastName?: string;

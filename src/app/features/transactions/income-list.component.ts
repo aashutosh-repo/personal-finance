@@ -22,7 +22,7 @@ export class IncomeListComponent implements OnInit {
   incomeForm: FormGroup;
   editingId: number | null = null;
 
-  displayedColumns: string[] = ['date', 'source', 'amount', 'description', 'actions'];
+  displayedColumns: string[] = ['incomeDate', 'sourceType', 'amount', 'description', 'actions'];
   incomeSources = Object.values(IncomeSource);
 
   constructor(
@@ -33,9 +33,10 @@ export class IncomeListComponent implements OnInit {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.incomeForm = this.fb.group({
-      source: [IncomeSource.SALARY, [Validators.required]],
+      sourceType: [IncomeSource.SALARY, [Validators.required]],
       amount: ['', [Validators.required, Validators.min(0)]],
-      date: [new Date().toISOString().split('T')[0], [Validators.required]],
+      incomeDate: [new Date().toISOString().split('T')[0], [Validators.required]],
+      currency: ['USD'],
       description: ['']
     });
   }
@@ -105,9 +106,10 @@ export class IncomeListComponent implements OnInit {
   editIncome(income: IncomeResponse) {
     this.editingId = income.id;
     this.incomeForm.patchValue({
-      source: income.source,
+      sourceType: income.sourceType,
       amount: income.amount,
-      date: income.date,
+      incomeDate: income.incomeDate,
+      currency: income.currency || 'USD',
       description: income.description
     });
     this.showAddForm = true;
@@ -129,8 +131,9 @@ export class IncomeListComponent implements OnInit {
 
   resetForm() {
     this.incomeForm.reset({
-      source: IncomeSource.SALARY,
-      date: new Date().toISOString().split('T')[0]
+      sourceType: IncomeSource.SALARY,
+      incomeDate: new Date().toISOString().split('T')[0],
+      currency: 'USD'
     });
     this.editingId = null;
     this.showAddForm = false;

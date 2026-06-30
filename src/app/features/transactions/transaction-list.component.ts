@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TransactionService } from '../../service/tansaction/transaction.service';
 import { AuthService } from '../../service/auth/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Transaction, ExpenseType } from '../../../model/transaction.model';
+import { Transaction, ExpenseType, TransactionType } from '../../../model/transaction.model';
 import { isPlatformBrowser } from '@angular/common';
 
 @Component({
@@ -20,6 +20,8 @@ export class TransactionListComponent implements OnInit {
   showAddForm = false;
   transactionForm: FormGroup;
   editingId: number | null = null;
+  transactionTypes = Object.values(TransactionType);
+  expenseCategories = Object.values(ExpenseType);
 
   displayedColumns: string[] = ['date', 'category', 'description', 'amount', 'type', 'actions'];
   expenseTypes = Object.values(ExpenseType);
@@ -46,6 +48,7 @@ export class TransactionListComponent implements OnInit {
       this.loadTransactions();
     }
   }
+
 
   loadTransactions() {
     const userId = this.authService.getCurrentUserID();

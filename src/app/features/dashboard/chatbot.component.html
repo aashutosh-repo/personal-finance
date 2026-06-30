@@ -16,7 +16,7 @@
           <mat-icon *ngIf="message.role === 'assistant'">smart_toy</mat-icon>
         </div>
         <div class="message-content">
-          <p class="message-text">{{ message.content }}</p>
+          <div class="message-text" [innerHTML]="formatMessageContent(message.content)"></div>
           <span class="message-time">{{ message.timestamp | date: 'short' }}</span>
         </div>
       </div>

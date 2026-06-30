@@ -1,9 +1,15 @@
 <div class="sidebar">
-  <div 
-    class="menu-item" 
-    *ngFor="let item of menuItems" 
-    [class.active]="item === selected" 
-    (click)="select(item)">
-    {{ item }}
+  <div class="sidebar-header">
+    <h3>Finance Tracker</h3>
+  </div>
+  <div class="menu-container">
+    <div 
+      class="menu-item" 
+      *ngFor="let item of menuItems" 
+      [class.active]="item.label === selected" 
+      (click)="select(item)">
+      <span class="icon">{{ item.icon }}</span>
+      <span class="label">{{ item.label }}</span>
+    </div>
   </div>
 </div>

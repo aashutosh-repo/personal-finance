@@ -42,9 +42,6 @@ onSubmit() {
       }
       this.authService.login(this.loginForm.value).subscribe({
         next: (response) => {
-          console.log('Login successful', response);
-          // Token is automatically saved as HttpOnly cookie by backend
-          // User data is saved in cookie by backend for JS access
           this.authService.setSessionItem('user', JSON.stringify(response.user));
           this.snackBar.open('Login successful!', 'OK', { duration: 3000 });
           this.router.navigate(['/v1/dashboard']); // redirect to home page

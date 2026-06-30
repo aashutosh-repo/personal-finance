@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { ExpenseType, Transaction } from '../../../../../model/transaction.model';
+import { ExpenseType, Transaction, TransactionType } from '../../../../../model/transaction.model';
 import { IncomeSource} from '../../../../../model/enums/IncomeSource.model';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { FormBuilder, FormGroup,Validators } from '@angular/forms';
@@ -24,13 +24,15 @@ export class TransactionFormComponent {
   @Output() expenseAdded = new EventEmitter<Transaction>();
   transactionForm: FormGroup;
   incomeForm!: FormGroup;
-  expenseTypes = Object.values(ExpenseType);
+  transactionTypes = Object.values(TransactionType);
+  expenseCategories = Object.values(ExpenseType);
   incomeSources = Object.values(IncomeSource);
 
 
   constructor(private fb: FormBuilder, private txService: TransactionService) {
     this.transactionForm = this.fb.group({
       txnAmount: [null, [Validators.required, Validators.min(1)]],
+      txnType: [null, Validators.required],
       expenseCategory: [null, Validators.required],
       description: ['', Validators.required],
       dateOfExpense: [new Date().toISOString().substring(0, 10), Validators.required],

@@ -133,39 +133,14 @@ button[mat-raised-button] {
   font-weight: 600;
   white-space: nowrap;
 
-  &.type-shopping {
-    background-color: #d1ecf1;
-    color: #0c5460;
-  }
-
-  &.type-education {
-    background-color: #d1f7e5;
+  &.type-credit {
+    background-color: #d8f1d1;
     color: #1b6e4a;
   }
 
-  &.type-investment {
-    background-color: #cfe2ff;
-    color: #084298;
-  }
-
-  &.type-utility {
-    background-color: #f8d7da;
-    color: #721c24;
-  }
-
-  &.type-grocery {
-    background-color: #e2e3e5;
-    color: #383d41;
-  }
-
-  &.type-travelling {
-    background-color: #fff3cd;
-    color: #856404;
-  }
-
-  &.type-adventure {
-    background-color: #d4edda;
-    color: #155724;
+  &.type-debit {
+    background-color: #f0b5b5;
+    color: #d31818;
   }
 }
 
@@ -230,5 +205,53 @@ button[mat-raised-button] {
       font-size: 10px;
       padding: 4px 8px;
     }
+  }
+}
+
+.category-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+
+
+  &.category-food {
+    background-color: #FFE5CC;
+    color: #CC5200;
+  }
+
+  &.category-transport {
+    background-color: #E3F2FD;
+    color: #1565C0;
+  }
+
+  &.category-shopping {
+    background-color: #E3F2FD;
+    color: #0e4e97;
+  }
+
+  &.category-shopping {
+    background-color: #E3F2FD;
+    color: #970e85;
+  }
+
+  &.category-education {
+    background-color: #E8F5E9;
+    color: #2E7D32;
+  }
+
+  &.category-other {
+    background-color: #E8F5E9;
+    color: #da5e0b;
+  }
+
+  &.category-investment {
+    background-color: #E3F2FD;
+    color: #0e4e97;
+  }
+
+  &.category-utility {
+    background-color: #FCE4EC;
+    color: #C2185B;
   }
 }

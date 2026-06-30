@@ -1,4 +1,10 @@
+export enum TransactionType {
+  DEBIT = 'DEBIT',
+  CREDIT = 'CREDIT'
+}
+
 export enum ExpenseType {
+  OTHER = 'OTHER',
   EDUCATION = 'EDUCATION',
   INVESTMENT = 'INVESTMENT',
   UTILITY = 'UTILITY',

@@ -1,38 +1,121 @@
 .sidebar {
-  width: 200px;
-  padding: 10px;
-  border-right: 1px solid #ccc;
-  height: 80vh;
+  width: 220px;
+  padding: 15px 10px;
+  border-right: 2px solid #e0e0e0;
+  height: 100vh;
   box-sizing: border-box;
-  background-color: #f9f9f9;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  overflow-y: auto;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
 }
 
-@media (max-width: 600px) {
-  .sidebar {
-    width: 140px;
-    padding: 10px;
-    border-right: 1px solid #ccc;
-    height: 100%;
-    box-sizing: border-box;
-    background-color: #f9f9f9;
+.sidebar-header {
+  padding: 15px 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  border-bottom: 2px solid #007bff;
+
+  h3 {
+    margin: 0;
+    color: #007bff;
+    font-size: 18px;
+    font-weight: 600;
   }
 }
 
+.menu-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .menu-item {
-  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
   cursor: pointer;
-  border-radius: 4px;
-  margin-bottom: 5px;
-  transition: background-color 0.3s, color 0.3s;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  color: #333;
+  font-weight: 500;
+  border-left: 4px solid transparent;
+
+  .icon {
+    font-size: 18px;
+    min-width: 20px;
+  }
+
+  .label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 .menu-item:hover {
-  background-color: #007bff;
-  color: white;
+  background-color: rgba(0, 123, 255, 0.15);
+  color: #007bff;
+  border-left-color: #007bff;
+  transform: translateX(4px);
 }
 
 .menu-item.active {
   background-color: #007bff;
   color: white;
-  font-weight: bold;
+  font-weight: 600;
+  border-left-color: #0056b3;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 200px;
+    padding: 10px 8px;
+    height: 80vh;
+  }
+
+  .sidebar-header {
+    padding: 10px 8px;
+
+    h3 {
+      font-size: 16px;
+    }
+  }
+
+  .menu-item {
+    gap: 10px;
+    padding: 10px 12px;
+
+    .icon {
+      font-size: 16px;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .sidebar {
+    width: 160px;
+    padding: 8px 5px;
+    height: 100%;
+  }
+
+  .sidebar-header {
+    padding: 8px 5px;
+
+    h3 {
+      font-size: 14px;
+    }
+  }
+
+  .menu-item {
+    gap: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+
+    .icon {
+      font-size: 14px;
+    }
+  }
 }

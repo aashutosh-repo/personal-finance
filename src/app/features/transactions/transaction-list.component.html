@@ -1,30 +1,34 @@
 <div class="transaction-container">
-  <mat-card class="transaction-card">
+  <!-- Add/Edit Form Card - Shows when adding/editing -->
+  <mat-card class="transaction-form-card" *ngIf="showAddForm">
     <mat-card-header>
-      <mat-card-title>Transactions</mat-card-title>
-      <button mat-raised-button color="primary" (click)="showAddForm ? resetForm() : showAddForm = true">
-        {{ showAddForm ? 'Cancel' : 'Add Transaction' }}
+      <mat-card-title>{{ editingId ? 'Edit Transaction' : 'Add New Transaction' }}</mat-card-title>
+      <button mat-icon-button (click)="resetForm()" class="close-button">
+        <mat-icon>close</mat-icon>
       </button>
     </mat-card-header>
 
     <mat-card-content>
-      <!-- Add/Edit Form -->
-      <form [formGroup]="transactionForm" (ngSubmit)="onAddTransaction()" *ngIf="showAddForm" class="transaction-form">
-        <h3>{{ editingId ? 'Edit Transaction' : 'Add New Transaction' }}</h3>
-
+      <form [formGroup]="transactionForm" (ngSubmit)="onAddTransaction()" class="transaction-form">
         <div class="form-row">
-          <mat-form-field appearance="outline" class="form-field">
-            <mat-label>Type</mat-label>
-            <mat-select formControlName="txnType">
-              <mat-option *ngFor="let type of expenseTypes" [value]="type">{{ type }}</mat-option>
-            </mat-select>
-            <mat-error>Type is required</mat-error>
-          </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Transaction Type</mat-label>
+          <mat-select formControlName="txnType" placeholder="Select transaction type">
+            <mat-option *ngFor="let type of transactionTypes" [value]="type">{{ type }}</mat-option>
+          </mat-select>
+          <mat-error *ngIf="transactionForm.get('txnType')?.hasError('required')">
+            Transaction type is required
+          </mat-error>
+        </mat-form-field>
 
-          <mat-form-field appearance="outline" class="form-field">
+          <mat-form-field appearance="outline">
             <mat-label>Category</mat-label>
-            <input matInput formControlName="expenseCategory" />
-            <mat-error>Category is required</mat-error>
+            <mat-select formControlName="expenseCategory" placeholder="Select category">
+              <mat-option *ngFor="let category of expenseCategories" [value]="category">{{ category }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="transactionForm.get('expenseCategory')?.hasError('required')">
+              Category is required
+            </mat-error>
           </mat-form-field>
         </div>
 
@@ -54,7 +58,19 @@
           <button mat-raised-button type="button" (click)="resetForm()">Cancel</button>
         </div>
       </form>
+    </mat-card-content>
+  </mat-card>
 
+  <!-- Transactions List Card -->
+  <mat-card class="transaction-card">
+    <mat-card-header>
+      <mat-card-title>Transactions</mat-card-title>
+      <button mat-raised-button color="primary" (click)="showAddForm = true" *ngIf="!showAddForm">
+        Add Transaction
+      </button>
+    </mat-card-header>
+
+    <mat-card-content>
       <!-- Transaction List -->
       <div class="transaction-list" *ngIf="!isLoading && transactions.length > 0">
         <h3>Recent Transactions</h3>
@@ -68,7 +84,11 @@
           <!-- Category Column -->
           <ng-container matColumnDef="category">
             <mat-header-cell *matHeaderCellDef>Category</mat-header-cell>
-            <mat-cell *matCellDef="let element">{{ element.expenseCategory }}</mat-cell>
+            <mat-cell *matCellDef="let element">
+              <span [ngClass]="'category-' + element.expenseCategory.toLowerCase()" class="category-badge">
+                {{ element.expenseCategory }}
+              </span>
+            </mat-cell>
           </ng-container>
 
           <!-- Description Column -->
@@ -112,7 +132,7 @@
       </div>
 
       <!-- Empty State -->
-      <div class="empty-state" *ngIf="!isLoading && transactions.length === 0 && !showAddForm">
+      <div class="empty-state" *ngIf="!isLoading && transactions.length === 0">
         <mat-icon>receipt</mat-icon>
         <p>No transactions yet</p>
         <button mat-raised-button color="primary" (click)="showAddForm = true">Add First Transaction</button>

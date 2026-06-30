@@ -15,7 +15,7 @@
         <div class="form-row">
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>Source</mat-label>
-            <mat-select formControlName="source">
+            <mat-select formControlName="sourceType">
               <mat-option *ngFor="let source of incomeSources" [value]="source">{{ source }}</mat-option>
             </mat-select>
             <mat-error>Source is required</mat-error>
@@ -31,7 +31,7 @@
         <div class="form-row">
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>Date</mat-label>
-            <input matInput type="date" formControlName="date" />
+            <input matInput type="date" formControlName="incomeDate" />
             <mat-error>Date is required</mat-error>
           </mat-form-field>
 
@@ -54,17 +54,17 @@
         <h3>Income Records</h3>
         <mat-table [dataSource]="incomes" class="income-table">
           <!-- Date Column -->
-          <ng-container matColumnDef="date">
+          <ng-container matColumnDef="incomeDate">
             <mat-header-cell *matHeaderCellDef>Date</mat-header-cell>
-            <mat-cell *matCellDef="let element">{{ element.date | date: 'short' }}</mat-cell>
+            <mat-cell *matCellDef="let element">{{ element.incomeDate | date: 'short' }}</mat-cell>
           </ng-container>
 
           <!-- Source Column -->
-          <ng-container matColumnDef="source">
+          <ng-container matColumnDef="sourceType">
             <mat-header-cell *matHeaderCellDef>Source</mat-header-cell>
             <mat-cell *matCellDef="let element">
-              <span class="source-badge" [ngClass]="'source-' + element.source.toLowerCase()">
-                {{ element.source }}
+              <span class="source-badge" [ngClass]="'source-' + element.sourceType.toLowerCase()">
+                {{ element.sourceType }}
               </span>
             </mat-cell>
           </ng-container>

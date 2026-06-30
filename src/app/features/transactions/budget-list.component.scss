@@ -141,10 +141,68 @@ button[mat-raised-button] {
     background-color: #f8d7da;
     color: #721c24;
   }
+
+  &.status-active {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  &.status-inactive {
+    background-color: #e2e3e5;
+    color: #383d41;
+  }
+}
+
+// Percentage Used Styles
+.percentage-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 150px;
 }
 
 mat-progress-bar {
-  margin-bottom: 5px;
+  flex: 1;
+  min-width: 80px;
+  height: 8px;
+  border-radius: 4px;
+
+  &.progress-safe {
+    ::ng-deep .mat-mdc-progress-bar-fill::after {
+      background-color: #28a745;
+    }
+  }
+
+  &.progress-warning {
+    ::ng-deep .mat-mdc-progress-bar-fill::after {
+      background-color: #ffc107;
+    }
+  }
+
+  &.progress-exceeded {
+    ::ng-deep .mat-mdc-progress-bar-fill::after {
+      background-color: #dc3545;
+    }
+  }
+}
+
+.percentage-text {
+  font-weight: 600;
+  font-size: 13px;
+  min-width: 40px;
+  text-align: right;
+
+  &.status-safe {
+    color: #28a745;
+  }
+
+  &.status-warning {
+    color: #ff9800;
+  }
+
+  &.status-exceeded {
+    color: #dc3545;
+  }
 }
 
 .empty-state {

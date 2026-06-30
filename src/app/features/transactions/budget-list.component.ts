@@ -6,6 +6,7 @@ import { AuthService } from '../../service/auth/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BudgetResponse } from '../../../model/budget.model';
 import { isPlatformBrowser } from '@angular/common';
+import { ExpenseType } from '../../../model/transaction.model';
 
 @Component({
   standalone: true,
@@ -21,7 +22,20 @@ export class BudgetListComponent implements OnInit {
   budgetForm: FormGroup;
   editingId: number | null = null;
 
-  displayedColumns: string[] = ['category', 'budgetAmount', 'spentAmount', 'percentage', 'status', 'actions'];
+  displayedColumns: string[] = ['category', 'name', 'amount', 'spending', 'percentage', 'period', 'status', 'actions'];
+  
+  expenseCategories = Object.values(ExpenseType);
+  
+  categories = [
+    { id: 1, name: 'Food & Dining' },
+    { id: 2, name: 'Transportation' },
+    { id: 3, name: 'Entertainment' },
+    { id: 4, name: 'Shopping' },
+    { id: 5, name: 'Utilities' },
+    { id: 6, name: 'Education' },
+    { id: 7, name: 'Health' },
+    { id: 8, name: 'Other' }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -30,10 +44,20 @@ export class BudgetListComponent implements OnInit {
     private snackBar: MatSnackBar,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
+    const today = new Date();
+    const startDate = today.toISOString().split('T')[0];
+    const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+    
     this.budgetForm = this.fb.group({
-      categoryId: [1, [Validators.required]],
-      budgetAmount: ['', [Validators.required, Validators.min(0)]],
-      month: ['', [Validators.required]],
+      category: [ExpenseType.OTHER, [Validators.required]],
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      amount: ['', [Validators.required, Validators.min(0.01)]],
+      currency: ['USD'],
+      period: ['MONTHLY', [Validators.required]],
+      startDate: [startDate, [Validators.required]],
+      endDate: [endDate, [Validators.required]],
+      alertThreshold: [80, [Validators.min(1), Validators.max(100)]],
+      alertFrequency: ['WEEKLY'],
       description: ['']
     });
   }
@@ -41,10 +65,6 @@ export class BudgetListComponent implements OnInit {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.loadBudgets();
-      // Set current month as default
-      const today = new Date();
-      const month = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-      this.budgetForm.patchValue({ month });
     }
   }
 
@@ -70,6 +90,7 @@ export class BudgetListComponent implements OnInit {
       this.isLoading = true;
 
       const budgetData = this.budgetForm.value;
+      console.log(budgetData);
       
       if (this.editingId) {
         // Update existing budget
@@ -108,8 +129,14 @@ export class BudgetListComponent implements OnInit {
     this.editingId = budget.id;
     this.budgetForm.patchValue({
       categoryId: budget.categoryId,
-      budgetAmount: budget.budgetAmount,
-      month: budget.month
+      name: budget.name,
+      amount: budget.amount,
+      currency: budget.currency || 'USD',
+      period: budget.period,
+      startDate: budget.startDate,
+      endDate: budget.endDate,
+      alertThreshold: budget.alertThreshold || 80,
+      alertFrequency: budget.alertFrequency || 'WEEKLY'
     });
     this.showAddForm = true;
   }
@@ -129,29 +156,20 @@ export class BudgetListComponent implements OnInit {
   }
 
   resetForm() {
-    this.budgetForm.reset();
+    const today = new Date();
+    const startDate = today.toISOString().split('T')[0];
+    const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+    
+    this.budgetForm.reset({
+      categoryId: 1,
+      currency: 'USD',
+      period: 'MONTHLY',
+      startDate: startDate,
+      endDate: endDate,
+      alertThreshold: 80,
+      alertFrequency: 'WEEKLY'
+    });
     this.editingId = null;
     this.showAddForm = false;
-    const today = new Date();
-    const month = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-    this.budgetForm.patchValue({ month });
-  }
-
-  getStatusClass(budget: BudgetResponse): string {
-    if (budget.isExceeded) {
-      return 'status-exceeded';
-    } else if (budget.percentageUsed > 80) {
-      return 'status-warning';
-    }
-    return 'status-good';
-  }
-
-  getStatusText(budget: BudgetResponse): string {
-    if (budget.isExceeded) {
-      return 'Exceeded';
-    } else if (budget.percentageUsed > 80) {
-      return 'Warning';
-    }
-    return 'Good';
   }
 }

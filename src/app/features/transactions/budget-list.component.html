@@ -12,38 +12,99 @@
       <form [formGroup]="budgetForm" (ngSubmit)="onAddBudget()" *ngIf="showAddForm" class="budget-form">
         <h3>{{ editingId ? 'Edit Budget' : 'Create New Budget' }}</h3>
 
+        <!-- Category -->
+        <!-- <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Expense Category</mat-label>
+          <mat-select formControlName="categoryId">
+            <mat-option *ngFor="let category of categories" [value]="category.id">
+              {{ category.name }}
+            </mat-option>
+          </mat-select>
+          <mat-error>Category is required</mat-error>
+        </mat-form-field> -->
+
+          <mat-form-field appearance="outline">
+            <mat-label>Expense Category</mat-label>
+            <mat-select formControlName="category" placeholder="Select category">
+              <mat-option *ngFor="let category of expenseCategories" [value]="category">{{ category }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+        <!-- Budget Name -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Budget Name</mat-label>
+          <input matInput formControlName="name" placeholder="e.g., Monthly Grocery Budget" />
+          <mat-error *ngIf="budgetForm.get('name')?.hasError('required')">Name is required</mat-error>
+          <mat-error *ngIf="budgetForm.get('name')?.hasError('minlength')">Name must be at least 3 characters</mat-error>
+        </mat-form-field>
+
+        <!-- Amount and Currency -->
         <div class="form-row">
           <mat-form-field appearance="outline" class="form-field">
-            <mat-label>Category</mat-label>
-            <mat-select formControlName="categoryId">
-              <mat-option value="1">Food & Dining</mat-option>
-              <mat-option value="2">Transportation</mat-option>
-              <mat-option value="3">Entertainment</mat-option>
-              <mat-option value="4">Shopping</mat-option>
-              <mat-option value="5">Utilities</mat-option>
-              <mat-option value="6">Education</mat-option>
-              <mat-option value="7">Health</mat-option>
-              <mat-option value="8">Other</mat-option>
-            </mat-select>
-            <mat-error>Category is required</mat-error>
+            <mat-label>Budget Amount</mat-label>
+            <input matInput type="number" step="0.01" formControlName="amount" />
+            <mat-error>Amount is required and must be greater than 0</mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="form-field">
-            <mat-label>Budget Amount</mat-label>
-            <input matInput type="number" formControlName="budgetAmount" />
-            <mat-error>Budget Amount is required</mat-error>
+            <mat-label>Currency</mat-label>
+            <mat-select formControlName="currency">
+              <mat-option value="USD">USD</mat-option>
+              <mat-option value="EUR">EUR</mat-option>
+              <mat-option value="GBP">GBP</mat-option>
+              <mat-option value="INR">INR</mat-option>
+              <mat-option value="JPY">JPY</mat-option>
+            </mat-select>
           </mat-form-field>
         </div>
 
+        <!-- Period and Duration -->
         <div class="form-row">
           <mat-form-field appearance="outline" class="form-field">
-            <mat-label>Month</mat-label>
-            <input matInput type="month" formControlName="month" />
-            <mat-error>Month is required</mat-error>
+            <mat-label>Period</mat-label>
+            <mat-select formControlName="period">
+              <mat-option value="MONTHLY">Monthly</mat-option>
+              <mat-option value="QUARTERLY">Quarterly</mat-option>
+              <mat-option value="YEARLY">Yearly</mat-option>
+            </mat-select>
+            <mat-error>Period is required</mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="form-field">
-            <mat-label>Description</mat-label>
+            <mat-label>Start Date</mat-label>
+            <input matInput type="date" formControlName="startDate" />
+            <mat-error>Start date is required</mat-error>
+          </mat-form-field>
+        </div>
+
+        <!-- End Date and Alert Threshold -->
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>End Date</mat-label>
+            <input matInput type="date" formControlName="endDate" />
+            <mat-error>End date is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Alert Threshold (%)</mat-label>
+            <input matInput type="number" min="1" max="100" formControlName="alertThreshold" />
+            <mat-hint>Alert when budget is used up to this percentage</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <!-- Alert Frequency and Description -->
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Alert Frequency</mat-label>
+            <mat-select formControlName="alertFrequency">
+              <mat-option value="DAILY">Daily</mat-option>
+              <mat-option value="WEEKLY">Weekly</mat-option>
+              <mat-option value="MONTHLY">Monthly</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Description (Optional)</mat-label>
             <input matInput formControlName="description" />
           </mat-form-field>
         </div>
@@ -66,35 +127,65 @@
             <mat-cell *matCellDef="let element">{{ element.categoryName }}</mat-cell>
           </ng-container>
 
-          <!-- Budget Amount Column -->
-          <ng-container matColumnDef="budgetAmount">
-            <mat-header-cell *matHeaderCellDef>Budget</mat-header-cell>
-            <mat-cell *matCellDef="let element">{{ element.budgetAmount | currency }}</mat-cell>
+          <!-- Name Column -->
+          <ng-container matColumnDef="name">
+            <mat-header-cell *matHeaderCellDef>Budget Name</mat-header-cell>
+            <mat-cell *matCellDef="let element">{{ element.name }}</mat-cell>
           </ng-container>
 
-          <!-- Spent Amount Column -->
-          <ng-container matColumnDef="spentAmount">
+          <!-- Amount Column -->
+          <ng-container matColumnDef="amount">
+            <mat-header-cell *matHeaderCellDef>Amount</mat-header-cell>
+            <mat-cell *matCellDef="let element">{{ element.amount | currency }}</mat-cell>
+          </ng-container>
+
+          <!-- Current Spending Column -->
+          <ng-container matColumnDef="spending">
             <mat-header-cell *matHeaderCellDef>Spent</mat-header-cell>
-            <mat-cell *matCellDef="let element">{{ element.spentAmount | currency }}</mat-cell>
+            <mat-cell *matCellDef="let element">{{ element.currentSpending | currency }}</mat-cell>
           </ng-container>
 
-          <!-- Percentage Column -->
+          <!-- Percentage Used Column -->
           <ng-container matColumnDef="percentage">
             <mat-header-cell *matHeaderCellDef>Used %</mat-header-cell>
             <mat-cell *matCellDef="let element">
-              <mat-progress-bar [value]="element.percentageUsed" 
-                                [color]="element.isExceeded ? 'warn' : (element.percentageUsed > 80 ? 'accent' : 'primary')">
-              </mat-progress-bar>
-              {{ element.percentageUsed }}%
+              <div class="percentage-container">
+                <mat-progress-bar 
+                  mode="determinate" 
+                  [value]="element.percentageUsed || 0"
+                  [ngClass]="'progress-' + (element.budgetStatus ? element.budgetStatus.toLowerCase() : 'safe')">
+                </mat-progress-bar>
+                <span class="percentage-text" [ngClass]="'status-' + (element.budgetStatus ? element.budgetStatus.toLowerCase() : 'safe')">
+                  {{ element.percentageUsed || 0 }}%
+                </span>
+              </div>
             </mat-cell>
+          </ng-container>
+
+          <!-- Period Column -->
+          <ng-container matColumnDef="period">
+            <mat-header-cell *matHeaderCellDef>Period</mat-header-cell>
+            <mat-cell *matCellDef="let element">{{ element.period }}</mat-cell>
+          </ng-container>
+
+          <!-- Start Date Column -->
+          <ng-container matColumnDef="startDate">
+            <mat-header-cell *matHeaderCellDef>Start Date</mat-header-cell>
+            <mat-cell *matCellDef="let element">{{ element.startDate | date: 'short' }}</mat-cell>
+          </ng-container>
+
+          <!-- End Date Column -->
+          <ng-container matColumnDef="endDate">
+            <mat-header-cell *matHeaderCellDef>End Date</mat-header-cell>
+            <mat-cell *matCellDef="let element">{{ element.endDate | date: 'short' }}</mat-cell>
           </ng-container>
 
           <!-- Status Column -->
           <ng-container matColumnDef="status">
             <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
             <mat-cell *matCellDef="let element">
-              <span [ngClass]="getStatusClass(element)" class="status-badge">
-                {{ getStatusText(element) }}
+              <span class="status-badge" [ngClass]="'status-' + (element.isActive ? 'active' : 'inactive')">
+                {{ element.isActive ? 'Active' : 'Inactive' }}
               </span>
             </mat-cell>
           </ng-container>

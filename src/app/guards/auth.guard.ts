@@ -5,6 +5,8 @@ import {
   UrlTree
 } from '@angular/router';
 import { AuthService } from '../service/auth/auth.service';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -15,16 +17,15 @@ export class AuthGuard implements CanActivate {
     private auth: AuthService
   ) {}
 
-  canActivate(): boolean | UrlTree {
+  canActivate(): Observable<boolean | UrlTree> {
     if (typeof window !== 'undefined') {
-      const token = this.auth.getToken();
-      if (token) {
-        return true; // ✅ user is logged in
-      }
+      // Verify token via API endpoint (HttpOnly cookies sent automatically with withCredentials)
+      return this.auth.verifyToken().pipe(
+        map(response => response.valid ? true : this.router.createUrlTree(['/login'])),
+        catchError(() => of(this.router.createUrlTree(['/login'])))
+      );
     }
 
-    // ❌ no token → redirect to login
-    // this.router.navigate(['/v1/login']);
-    return this.router.createUrlTree(['/v1/login']);
+    return of(this.router.createUrlTree(['/login']));
   }
 }

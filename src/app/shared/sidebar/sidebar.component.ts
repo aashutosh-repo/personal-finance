@@ -13,19 +13,22 @@ export class SidebarComponent {
   @Output() menuSelect = new EventEmitter<string>();
 
   menuItems = [
-    'Dashboard',
-    'Transaction',
-    'Debt',
-    'Investment',
-    'Monthly Overview',
-    'Account'
+    { label: 'Dashboard', icon: '📊', id: 'Dashboard' },
+    { label: 'Transactions', icon: '💳', id: 'transactions' },
+    { label: 'Budget', icon: '💰', id: 'budgets' },
+    { label: 'Income', icon: '📈', id: 'income' },
+    { label: 'Chatbot', icon: '🤖', id: 'chatbot' },
+    { label: 'Investments', icon: '📗', id: 'Investment' },
+    { label: 'Debts', icon: '💳', id: 'Debt' },
+    { label: 'Monthly Overview', icon: '📅', id: 'Monthly Overview' },
+    { label: 'Account', icon: '👤', id: 'Account' }
   ];
 
   selected = 'Dashboard';
 
-  select(item: string) {
-    this.selected = item;
-    this.menuSelect.emit(item);
+  select(item: any) {
+    this.selected = item.label;
+    this.menuSelect.emit(item.id);
   }
 
 }

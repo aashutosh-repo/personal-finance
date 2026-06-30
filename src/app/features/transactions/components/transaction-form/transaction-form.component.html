@@ -5,13 +5,13 @@
     <mat-button-toggle value="income">Income</mat-button-toggle>
   </mat-button-toggle-group>
 </div>
-
+<P>Test</P>
  <form *ngIf="selectedPage === 'transaction'"
   [formGroup]="transactionForm" (ngSubmit)="submit()" class="transaction-form">
 
   <div class="form-grid">
     <mat-form-field appearance="outline">
-      <mat-label>Amount Spent</mat-label>
+      <mat-label>Amount</mat-label>
       <input matInput type="number" formControlName="txnAmount" placeholder="Enter amount" />
       <mat-error *ngIf="transactionForm.get('txnAmount')?.hasError('required')">
         Amount is required
@@ -19,12 +19,22 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Type of Expense</mat-label>
-      <mat-select formControlName="expenseCategory" placeholder="Select expense type">
-        <mat-option *ngFor="let type of expenseTypes" [value]="type">{{ type }}</mat-option>
+      <mat-label>Transaction Type</mat-label>
+      <mat-select formControlName="txnType" placeholder="Select transaction type">
+        <mat-option *ngFor="let type of transactionTypes" [value]="type">{{ type }}</mat-option>
+      </mat-select>
+      <mat-error *ngIf="transactionForm.get('txnType')?.hasError('required')">
+        Transaction type is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Category</mat-label>
+      <mat-select formControlName="expenseCategory" placeholder="Select category">
+        <mat-option *ngFor="let category of expenseCategories" [value]="category">{{ category }}</mat-option>
       </mat-select>
       <mat-error *ngIf="transactionForm.get('expenseCategory')?.hasError('required')">
-        Expense type is required
+        Category is required
       </mat-error>
     </mat-form-field>
 
@@ -37,7 +47,7 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Date of Expense</mat-label>
+      <mat-label>Date of Transaction</mat-label>
       <input matInput [matDatepicker]="picker" formControlName="dateOfExpense" />
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
@@ -46,7 +56,7 @@
 
   <div class="btn-container">
     <button mat-raised-button color="primary" type="submit" [disabled]="transactionForm.invalid">
-      Add Expense
+      Add Transaction
     </button>
   </div>
 </form> 

@@ -1,35 +1,37 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { Transaction } from '../../../model/transaction.model';
+import { environment } from '../../../environments/environment.prod';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TransactionService {
     
-  private baseUrl = 'http://localhost:8080/api/v1/transactions';
+  private baseUrl = environment.apiUrl + '/api/v1/transactions';
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {}
+  constructor() {}
 
   addExpense(tx: Transaction): Observable<Transaction> {
-    return this.http.post<Transaction>(this.baseUrl, tx);
+    return this.http.post<Transaction>(this.baseUrl, tx, {withCredentials: true});
   }
 
   getExpensesByUser(userId: string): Observable<Transaction[]> {
-    return this.http.get<Transaction[]>(`${this.baseUrl}/user/${userId}`);
+    return this.http.get<Transaction[]>(`${this.baseUrl}/user/${userId}`, {withCredentials: true});
   }
 
   getExpense(id: number): Observable<Transaction> {
-    return this.http.get<Transaction>(`${this.baseUrl}/${id}`);
+    return this.http.get<Transaction>(`${this.baseUrl}/${id}`, {withCredentials: true});
   }
 
   deleteExpense(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+    return this.http.delete<void>(`${this.baseUrl}/${id}`, {withCredentials: true});
   }
 
   updateExpense(id: number, tx: Transaction): Observable<Transaction> {
-    return this.http.put<Transaction>(`${this.baseUrl}/${id}`, tx);
+    return this.http.put<Transaction>(`${this.baseUrl}/${id}`, tx, {withCredentials: true});
   }
 
    calculateTotals(userId: string): Observable<{ totalExpense: number; totalInvestment: number; totalDebt: number }> {

@@ -12,9 +12,15 @@ export interface Budget {
 }
 
 export interface BudgetRequest {
+  name: string;
   categoryId: number;
-  budgetAmount: number;
-  month: string;
+  amount: number;
+  currency?: string;
+  period: string; // MONTHLY, QUARTERLY, YEARLY
+  startDate: string; // YYYY-MM-DD format
+  endDate: string; // YYYY-MM-DD format
+  alertThreshold?: number;
+  alertFrequency?: string;
   description?: string;
 }
 
@@ -22,11 +28,17 @@ export interface BudgetResponse {
   id: number;
   categoryId: number;
   categoryName: string;
-  budgetAmount: number;
-  spentAmount: number;
-  month: string;
-  percentageUsed: number;
-  isExceeded: boolean;
+  name: string;
+  amount: number;
+  period: string;
+  startDate: string;
+  endDate: string;
+  currency?: string;
+  alertThreshold?: number;
+  alertFrequency?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface BudgetAlert {
@@ -50,18 +62,22 @@ export interface Income {
 }
 
 export interface IncomeRequest {
-  source: string;
+  sourceType: string;
   amount: number;
-  date: string;
+  incomeDate: string;
+  currency?: string;
   description?: string;
 }
 
 export interface IncomeResponse {
   id: number;
-  source: string;
+  sourceType: string;
   amount: number;
-  date: string;
+  incomeDate: string;
+  currency?: string;
   description?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface IncomeSummary {

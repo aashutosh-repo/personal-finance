@@ -6,6 +6,7 @@ import { AuthService } from '../../service/auth/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ChatMessage, ChatRequest } from '../../../model/chatbot.model';
 import { isPlatformBrowser } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   standalone: true,
@@ -23,6 +24,7 @@ export class ChatbotComponent implements OnInit {
   // Initial system message for chatbot
   systemMessage: ChatMessage = {
     role: 'assistant',
+    userId: 0,
     content: 'Hi! I\'m your personal financial advisor. I can help you with insights about your spending, budgeting tips, investment advice, and more. How can I assist you today?',
     timestamp: new Date().toISOString()
   };
@@ -32,6 +34,7 @@ export class ChatbotComponent implements OnInit {
     private chatbotService: ChatbotService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
+    private sanitizer: DomSanitizer,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.chatForm = this.fb.group({
@@ -46,6 +49,81 @@ export class ChatbotComponent implements OnInit {
     }
   }
 
+  /**
+   * Format message content to support code blocks, quotes, and bold text
+   * Converts markdown-like syntax to HTML
+   */
+  formatMessageContent(content: string): SafeHtml {
+    let formatted = content;
+
+    // 1. First, handle code blocks (triple backticks) BEFORE escaping HTML
+    // This preserves code content as-is
+    const codeBlockRegex = /```([\w]*)\n?([\s\S]*?)\n?```/g;
+    let codeBlockIndex = 0;
+    const codeBlocks: { [key: string]: string } = {};
+
+    formatted = formatted.replace(codeBlockRegex, (match, language, code) => {
+      const placeholder = `__CODE_BLOCK_${codeBlockIndex}__`;
+      // Escape HTML inside code blocks
+      const escapedCode = code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .trim();
+      codeBlocks[placeholder] = `<pre class="code-block"><code class="language-${language}">${escapedCode}</code></pre>`;
+      codeBlockIndex++;
+      return placeholder;
+    });
+
+    // 2. Escape HTML special characters (except placeholders)
+    formatted = formatted
+      .replace(/&(?!amp;|lt;|gt;|#|\w+;)/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // 3. Restore code blocks
+    Object.keys(codeBlocks).forEach(placeholder => {
+      formatted = formatted.replace(placeholder, codeBlocks[placeholder]);
+    });
+
+    // 4. Convert inline code (single backticks)
+    formatted = formatted.replace(
+      /`([^`]+)`/g,
+      '<code class="inline-code">$1</code>'
+    );
+
+    // 5. Convert bold text (**text** or __text__)
+    formatted = formatted.replace(
+      /\*\*([^*]+)\*\*/g,
+      '<strong>$1</strong>'
+    );
+    formatted = formatted.replace(
+      /__([^_]{1,}?)__/g,
+      '<strong>$1</strong>'
+    );
+
+    // 6. Convert italic text (*text* or _text_)
+    formatted = formatted.replace(
+      /\*([^*]+)\*/g,
+      '<em>$1</em>'
+    );
+    formatted = formatted.replace(
+      /_([^_]+)_/g,
+      '<em>$1</em>'
+    );
+
+    // 7. Convert blockquotes (lines starting with >)
+    formatted = formatted.replace(
+      /^&gt;\s+(.+)$/gm,
+      '<blockquote class="message-quote">$1</blockquote>'
+    );
+
+    // 8. Convert line breaks to <br>
+    formatted = formatted.replace(/\n/g, '<br>');
+
+    return this.sanitizer.bypassSecurityTrustHtml(formatted);
+  }
+
   sendMessage() {
     if (this.chatForm.valid && !this.isLoading) {
       const userInput = this.chatForm.value.message.trim();
@@ -57,6 +135,7 @@ export class ChatbotComponent implements OnInit {
       // Add user message to chat
       const userMessage: ChatMessage = {
         role: 'user',
+        userId:  0,
         content: userInput,
         timestamp: new Date().toISOString()
       };
@@ -72,13 +151,19 @@ export class ChatbotComponent implements OnInit {
         conversationId: this.conversationId
       };
 
+      console.log('📨 Sending message to chatbot:', chatRequest);
+
       // Send to chatbot
       this.chatbotService.sendMessage(chatRequest).subscribe({
         next: (response) => {
+          console.log('✓ Response from chatbot:', response);
+          
           if (response.success && response.data) {
+            console.log('✓ Valid response received, adding to chat');
             // Add assistant response
             const assistantMessage: ChatMessage = {
               role: 'assistant',
+              userId: 0,
               content: response.data.response,
               timestamp: new Date().toISOString()
             };
@@ -89,18 +174,21 @@ export class ChatbotComponent implements OnInit {
               this.conversationId = response.data.conversationId;
             }
           } else {
+            console.warn('⚠️ Invalid response format:', response);
             this.snackBar.open('Failed to get response from chatbot', 'Close', { duration: 4000 });
           }
           this.isLoading = false;
         },
         error: (err) => {
           this.isLoading = false;
-          const errorMsg = err.error?.message || 'Failed to send message. Please try again.';
+          console.error('✗ Error from chatbot service:', err);
+          const errorMsg = err.error?.message || err.statusText || 'Failed to send message. Please try again.';
           this.snackBar.open(errorMsg, 'Close', { duration: 4000 });
 
           // Add error message to chat
           const errorMessage: ChatMessage = {
             role: 'assistant',
+            userId: 0,
             content: `Sorry, I couldn't process your request. Error: ${errorMsg}`,
             timestamp: new Date().toISOString()
           };
