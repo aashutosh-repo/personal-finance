@@ -18,14 +18,14 @@ export class IncomeService {
    * Add a new income
    */
   addIncome(incomeData: IncomeRequest): Observable<IncomeResponse> {
-      const userId = this.authService.getCurrentUserID();
+    const userId = this.authService.getCurrentUserID();
     return this.http.post<IncomeResponse>(`${this.BASE_URL}?userId=${userId}`, incomeData, {withCredentials: true});
   }
 
   /**
    * Get all income for a specific user
    */
-  getIncomeByUser(userId: number): Observable<IncomeResponse[]> {
+  getIncomeByUser(userId: string): Observable<IncomeResponse[]> {
     return this.http.get<IncomeResponse[]>(`${this.BASE_URL}/user/${userId}`, {withCredentials: true});
   }
 
