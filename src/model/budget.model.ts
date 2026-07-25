@@ -13,6 +13,7 @@ export interface Budget {
 
 export interface BudgetRequest {
   name: string;
+  userId: string;
   categoryId: number;
   amount: number;
   currency?: string;

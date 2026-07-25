@@ -46,6 +46,7 @@
       <p><strong>USERID:</strong> {{ userDetails?.userName }}</p>
       <p><strong>NAME:</strong> {{ userDetails?.firstName }} {{ userDetails?.lastName }}</p>
       <p><strong>LAST LOGIN:</strong> {{ userDetails?.lastLogin | date: 'short' }}</p>
+      <button type="button" (click)="logout()">Logout</button>    
     </div>
   }
 </mat-toolbar>

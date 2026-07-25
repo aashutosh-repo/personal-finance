@@ -52,7 +52,7 @@ export class BudgetListComponent implements OnInit {
       category: [ExpenseType.OTHER, [Validators.required]],
       name: ['', [Validators.required, Validators.minLength(3)]],
       amount: ['', [Validators.required, Validators.min(0.01)]],
-      currency: ['USD'],
+      currency: ['INR'],
       period: ['MONTHLY', [Validators.required]],
       startDate: [startDate, [Validators.required]],
       endDate: [endDate, [Validators.required]],
@@ -73,7 +73,7 @@ export class BudgetListComponent implements OnInit {
     if (!userId) return;
 
     this.isLoading = true;
-    this.budgetService.getBudgetsByUser(parseInt(userId)).subscribe({
+    this.budgetService.getBudgetsByUser(userId).subscribe({
       next: (budgets) => {
         this.budgets = budgets;
         this.isLoading = false;
@@ -88,13 +88,20 @@ export class BudgetListComponent implements OnInit {
   onAddBudget() {
     if (this.budgetForm.valid && !this.isLoading) {
       this.isLoading = true;
+      const userId = this.authService.getCurrentUserID();
+      if (!userId) {
+        console.error('User ID not found. User might not be logged in.');
+        this.snackBar.open('User not logged in', 'Close', { duration: 4000 });
+        this.isLoading = false;
+        return;
+      };
 
       const budgetData = this.budgetForm.value;
       console.log(budgetData);
       
       if (this.editingId) {
         // Update existing budget
-        this.budgetService.updateBudget(this.editingId, budgetData).subscribe({
+        this.budgetService.updateBudget(userId, budgetData).subscribe({
           next: () => {
             this.snackBar.open('Budget updated successfully', 'OK', { duration: 3000 });
             this.loadBudgets();

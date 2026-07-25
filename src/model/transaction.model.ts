@@ -16,7 +16,7 @@ export enum ExpenseType {
 
 export interface Transaction {
   id?: number;
-   userId: number
+  userId: number
   categoryId: number
   txnAmount: number
   expenseCategory: string

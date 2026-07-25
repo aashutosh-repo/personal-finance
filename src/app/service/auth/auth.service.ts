@@ -87,7 +87,15 @@ export class AuthService {
     const user = JSON.parse(userStr);
     return user.email.toString();
   }
+
   getCurrentUserID(): string | null {
+    const userStr= this.storage.get('user');
+    if (!userStr) return null;
+    const user = JSON.parse(userStr);
+    return user.id.toString();
+  }
+
+    getUserID(): string | null {
     const userStr= this.storage.get('user');
     if (!userStr) return null;
     const user = JSON.parse(userStr);
@@ -120,10 +128,12 @@ export class AuthService {
     return this.http.post(`${this.BASE_URL}/logout`, {}, {withCredentials: true})
       .pipe(
         tap(() => {
+          console.log('Logout successful');
           this.currentUserSubject.next(null);
           if (typeof window !== 'undefined') {
             localStorage.removeItem(this.TOKEN_KEY);
           }
+          localStorage.removeItem(this.TOKEN_KEY);
           this.storage.remove('user');
         }),
         catchError(this.handleError)

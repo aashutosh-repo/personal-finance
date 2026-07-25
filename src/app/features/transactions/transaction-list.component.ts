@@ -52,6 +52,7 @@ export class TransactionListComponent implements OnInit {
 
   loadTransactions() {
     const userId = this.authService.getCurrentUserID();
+    console.log('Current User ID:', userId); // Debugging line
     if (!userId) return;
 
     this.isLoading = true;
@@ -72,13 +73,15 @@ export class TransactionListComponent implements OnInit {
       this.isLoading = true;
 
       const userId = this.authService.getCurrentUserID();
+      console.log('Current User ID:', userId); // Debugging line
       if (!userId) return;
 
       const transactionData: Transaction = {
         ...this.transactionForm.value,
-        userId: parseInt(userId),
+        userId: userId,
         txnAmount: parseFloat(this.transactionForm.value.txnAmount)
       };
+      console.log('Transaction Data:', transactionData); // Debugging line
 
       if (this.editingId) {
         // Update existing transaction

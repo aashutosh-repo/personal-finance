@@ -44,14 +44,27 @@ export class HeaderComponent implements  OnInit {
     }
   }
 
-   authService = inject(AuthService);
-    elementRef = inject(ElementRef);
+  authService = inject(AuthService);
+  elementRef = inject(ElementRef);
 
 
-  // logout() {
-  //   this.authService.logout();
-  //   window.location.reload(); // optional: refresh to reset state
-  // }
+  logout() {
+    // this.authService.logout();
+    // console.log('User logged out');
+    // window.location.reload(); // optional: refresh to reset state
+      this.authService.logout().subscribe({
+      next: () => {
+        console.log('User logged out');
+        // Prefer navigation over reload
+        this.router.navigate(['/login']);
+        // Or, if you really want:
+        // window.location.reload();
+      },
+      error: (err) => {
+        console.error('Logout failed', err);
+      }
+    });
+  }
   
   isExpanded = false;
   userDetails: UserResponse | null = null;
