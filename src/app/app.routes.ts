@@ -46,7 +46,7 @@ export const routes: Routes = [
       },
       {
         path: 'chatbot',
-        loadComponent: () =>import('./features/dashboard/chatbot.component').then((m) => m.ChatbotComponent)
+        loadComponent: () =>import('./features/dashboard/components/chatbot/chatbot.component').then((m) => m.ChatbotComponent)
       },
     ],
   },

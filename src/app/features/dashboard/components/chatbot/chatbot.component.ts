@@ -1,10 +1,10 @@
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
-import { SharedMaterialModules } from '../../service/common/shared-material.module';
+import { SharedMaterialModules } from '../../../../service/common/shared-material.module';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ChatbotService } from '../../service/tansaction/chatbot.service';
-import { AuthService } from '../../service/auth/auth.service';
+import { ChatbotService } from '../../../../service/tansaction/chatbot.service';
+import { AuthService } from '../../../../service/auth/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ChatMessage, ChatRequest } from '../../../model/chatbot.model';
+import { ChatMessage, ChatRequest } from '../../../../../model/chatbot.model';
 import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
@@ -24,7 +24,7 @@ export class ChatbotComponent implements OnInit {
   // Initial system message for chatbot
   systemMessage: ChatMessage = {
     role: 'assistant',
-    userId: 0,
+    userId: "system",
     content: 'Hi! I\'m your personal financial advisor. I can help you with insights about your spending, budgeting tips, investment advice, and more. How can I assist you today?',
     timestamp: new Date().toISOString()
   };
@@ -127,15 +127,17 @@ export class ChatbotComponent implements OnInit {
   sendMessage() {
     if (this.chatForm.valid && !this.isLoading) {
       const userInput = this.chatForm.value.message.trim();
-      
-      if (!userInput) {
+      console.log('User input:', userInput);
+      const userId = this.authService.getCurrentUserID();
+
+      if (!userInput || !userId) {
         return;
       }
 
       // Add user message to chat
       const userMessage: ChatMessage = {
         role: 'user',
-        userId:  0,
+        userId:  userId,
         content: userInput,
         timestamp: new Date().toISOString()
       };
@@ -160,10 +162,15 @@ export class ChatbotComponent implements OnInit {
           
           if (response.success && response.data) {
             console.log('✓ Valid response received, adding to chat');
+            const userId = this.authService.getCurrentUserID();
+            if(!userId){
+              console.log("No user Found");
+              return;
+            }
             // Add assistant response
             const assistantMessage: ChatMessage = {
               role: 'assistant',
-              userId: 0,
+              userId: userId,
               content: response.data.response,
               timestamp: new Date().toISOString()
             };
@@ -188,7 +195,7 @@ export class ChatbotComponent implements OnInit {
           // Add error message to chat
           const errorMessage: ChatMessage = {
             role: 'assistant',
-            userId: 0,
+            userId: userId,
             content: `Sorry, I couldn't process your request. Error: ${errorMsg}`,
             timestamp: new Date().toISOString()
           };
