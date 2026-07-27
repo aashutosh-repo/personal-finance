@@ -149,6 +149,7 @@ export class ChatbotComponent implements OnInit {
 
       // Prepare request
       const chatRequest: ChatRequest = {
+        userId: userId,
         message: userInput,
         conversationId: this.conversationId
       };

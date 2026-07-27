@@ -10,7 +10,7 @@ import { environment } from '../../../environments/environment.prod';
   providedIn: 'root'
 })
 export class ChatbotService {
-  private readonly BASE_URL = environment.apiUrl + '/api/llm';
+  private readonly BASE_URL = environment.apiUrl + '/api/bot';
   private http = inject(HttpClient);
 
   /**
@@ -20,6 +20,7 @@ export class ChatbotService {
     console.log('📤 Sending chatbot request:', request);
     
     return this.http.post<ChatResponse>(`${this.BASE_URL}/chat`, {
+      userId: request.userId,
       message: request.message,
       conversationId: request.conversationId
     }, {withCredentials: true}).pipe(
