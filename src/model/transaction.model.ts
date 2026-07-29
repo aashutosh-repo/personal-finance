@@ -14,6 +14,15 @@ export enum ExpenseType {
   ADVENTURE = 'ADVENTURE'
 }
 
+export enum IncomeSource {
+  SALARY = 'SALARY',
+  FREELANCE = 'FREELANCE',
+  BUSINESS = 'BUSINESS',
+  INVESTMENT = 'INVESTMENT',
+  OTHERS = 'OTHERS'
+}
+
+
 export interface Transaction {
   id?: number;
   userId: number
