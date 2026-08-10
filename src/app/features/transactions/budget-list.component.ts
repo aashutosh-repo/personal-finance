@@ -50,6 +50,8 @@ export class BudgetListComponent implements OnInit {
     
     this.budgetForm = this.fb.group({
       category: [ExpenseType.OTHER, [Validators.required]],
+      userId: [this.authService.getCurrentUserID(), [Validators.required]],
+      categoryId: [1, [Validators.required]],
       name: ['', [Validators.required, Validators.minLength(3)]],
       amount: ['', [Validators.required, Validators.min(0.01)]],
       currency: ['INR'],
