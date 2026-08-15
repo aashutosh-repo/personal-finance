@@ -1,43 +1,60 @@
-<div class="chatbot-container">
-  <mat-card class="chatbot-card">
+<div class="chatbot-container" [class.dark-theme]="isDarkTheme">
+  <mat-card class="chatbot-card" role="region" aria-label="Financial advisor chat">
     <mat-card-header>
-      <mat-card-title>Financial Advisor AI Chat</mat-card-title>
-      <button mat-icon-button (click)="clearChat()" class="clear-btn" matTooltip="Clear chat">
-        <mat-icon>delete</mat-icon>
-      </button>
+      <div class="header-left">
+        <mat-card-title>Financial Advisor AI Chat</mat-card-title>
+        <span class="sr-only">Conversation with financial advisor AI</span>
+      </div>
+      <div class="header-actions">
+        <button mat-icon-button (click)="toggleTheme()" aria-label="Toggle theme" matTooltip="Toggle light/dark theme">
+          <mat-icon>{{ isDarkTheme ? 'dark_mode' : 'light_mode' }}</mat-icon>
+        </button>
+        <button mat-icon-button (click)="clearChat()" class="clear-btn" matTooltip="Clear chat" aria-label="Clear chat">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
     </mat-card-header>
 
-    <mat-card-content class="chat-messages" #messagesContainer>
+    <mat-card-content class="chat-messages" #messagesContainer aria-live="polite" role="list">
       <div *ngFor="let message of messages; trackBy: trackByTimestamp" 
            [ngClass]="{'user-message': message.role === 'user', 'assistant-message': message.role === 'assistant'}"
-           class="message">
-        <div class="message-avatar">
+           class="message" role="listitem" [attr.aria-label]="message.role + ' message at ' + (message.timestamp | date:'short')">
+        <div class="message-avatar" aria-hidden="true">
           <mat-icon *ngIf="message.role === 'user'">account_circle</mat-icon>
           <mat-icon *ngIf="message.role === 'assistant'">smart_toy</mat-icon>
         </div>
         <div class="message-content">
           <div class="message-text" [innerHTML]="formatMessageContent(message.content)"></div>
-          <span class="message-time">{{ message.timestamp | date: 'short' }}</span>
+          <span class="message-time" aria-hidden="true">{{ message.timestamp | date: 'short' }}</span>
         </div>
       </div>
 
-      <div *ngIf="isLoading" class="loading-indicator">
-        <mat-spinner [diameter]="30"></mat-spinner>
-        <p>Thinking...</p>
+      <!-- Typing indicator as a message bubble for better UX -->
+      <div *ngIf="isLoading" class="message assistant-message typing" role="status" aria-live="polite">
+        <div class="message-avatar" aria-hidden="true">
+          <mat-icon>smart_toy</mat-icon>
+        </div>
+        <div class="message-content">
+          <div class="typing-dots" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <span class="message-time">{{ '...' }}</span>
+        </div>
       </div>
     </mat-card-content>
 
     <mat-card-footer class="chat-input">
-      <form [formGroup]="chatForm" (ngSubmit)="sendMessage()" class="input-form">
+      <form [formGroup]="chatForm" (ngSubmit)="sendMessage()" class="input-form" aria-label="Chat input form">
         <mat-form-field appearance="outline" class="message-field">
           <mat-label>Type your message...</mat-label>
-          <input matInput formControlName="message" placeholder="Ask me about your finances..." [disabled]="isLoading" />
+          <input matInput formControlName="message" placeholder="Type your message..." [disabled]="isLoading" aria-label="Message input" />
         </mat-form-field>
         <button 
           mat-fab 
           color="primary" 
           [disabled]="!chatForm.valid || isLoading"
           matTooltip="Send message"
+          aria-label="Send message"
           type="submit">
           <mat-icon>send</mat-icon>
         </button>

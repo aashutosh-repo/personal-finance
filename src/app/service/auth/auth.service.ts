@@ -15,6 +15,10 @@ export class AuthService {
 
   private readonly BASE_URL = environment.apiUrl + '/api/v1/auth';
   private readonly TOKEN_KEY = 'auth_token';
+  // Prefer cookie-based authentication by default. When true, do not persist tokens to localStorage.
+  preferCookieAuth = true;
+  // In-memory token storage to avoid persistent storage exposure
+  private inMemoryToken: string | null = null;
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
   private storage = inject(BrowserStorageService);
@@ -34,7 +38,12 @@ export class AuthService {
     )
       .pipe(
         tap(response => {
-          this.saveToken(response.accessToken);
+          if (!this.preferCookieAuth && response.accessToken) {
+            this.saveToken(response.accessToken);
+          } else {
+            // keep token only in memory when present
+            if (response.accessToken) this.inMemoryToken = response.accessToken;
+          }
           this.currentUserSubject.next(response);
           this.storage.set('user', JSON.stringify(response.user)); 
         }),
@@ -106,18 +115,21 @@ export class AuthService {
    * Save JWT token to localStorage
    */
   saveToken(token: string) {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.TOKEN_KEY, token);
-    }
+    // Store token in-memory only to reduce XSS exposure. Avoid localStorage.
+    this.inMemoryToken = token;
   }
 
   /**
    * Retrieve JWT token from localStorage
    */
   getToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(this.TOKEN_KEY);
-    }
+    // Prefer in-memory token. If not available and cookie-mode disabled, fall back to localStorage.
+    if (this.inMemoryToken) return this.inMemoryToken;
+    try {
+      if (!this.preferCookieAuth && typeof window !== 'undefined') {
+        return localStorage.getItem(this.TOKEN_KEY);
+      }
+    } catch (e) {}
     return null;
   }
 
@@ -130,14 +142,23 @@ export class AuthService {
         tap(() => {
           console.log('Logout successful');
           this.currentUserSubject.next(null);
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem(this.TOKEN_KEY);
-          }
-          localStorage.removeItem(this.TOKEN_KEY);
+          this.inMemoryToken = null;
+          try { localStorage.removeItem(this.TOKEN_KEY); } catch {}
           this.storage.remove('user');
         }),
         catchError(this.handleError)
       );
+  }
+
+  /**
+   * Clear client-side session state without contacting the server.
+   * Useful when token has expired or a 401 is returned to avoid recursive requests.
+   */
+  clearLocalSession() {
+    try { this.inMemoryToken = null; } catch {}
+    try { localStorage.removeItem(this.TOKEN_KEY); } catch {}
+    try { this.storage.remove('user'); } catch {}
+    try { this.currentUserSubject.next(null); } catch {}
   }
   
   // logout() {

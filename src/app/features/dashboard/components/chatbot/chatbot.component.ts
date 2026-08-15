@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ViewChild, ElementRef } from '@angular/core';
 import { SharedMaterialModules } from '../../../../service/common/shared-material.module';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ChatbotService } from '../../../../service/tansaction/chatbot.service';
@@ -7,6 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ChatMessage, ChatRequest } from '../../../../../model/chatbot.model';
 import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import DOMPurify from 'dompurify';
 
 @Component({
   standalone: true,
@@ -20,6 +21,9 @@ export class ChatbotComponent implements OnInit {
   messages: ChatMessage[] = [];
   isLoading = false;
   conversationId: string | undefined;
+  isDarkTheme = false;
+
+  @ViewChild('messagesContainer') messagesContainer!: ElementRef;
 
   // Initial system message for chatbot
   systemMessage: ChatMessage = {
@@ -46,6 +50,19 @@ export class ChatbotComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       // Initialize with system message
       this.messages.push(this.systemMessage);
+      // load persisted theme preference or respect OS preference
+      try {
+        const stored = localStorage.getItem('chatbot-dark');
+        if (stored !== null) {
+          this.isDarkTheme = stored === 'true';
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          this.isDarkTheme = true;
+        }
+      } catch (e) {
+        // ignore storage errors
+      }
+      // scroll initial message into view
+      setTimeout(() => this.scrollToBottom(), 0);
     }
   }
 
@@ -54,7 +71,7 @@ export class ChatbotComponent implements OnInit {
    * Converts markdown-like syntax to HTML
    */
   formatMessageContent(content: string): SafeHtml {
-    let formatted = content;
+    let formatted = content || '';
 
     // 1. First, handle code blocks (triple backticks) BEFORE escaping HTML
     // This preserves code content as-is
@@ -121,7 +138,13 @@ export class ChatbotComponent implements OnInit {
     // 8. Convert line breaks to <br>
     formatted = formatted.replace(/\n/g, '<br>');
 
-    return this.sanitizer.bypassSecurityTrustHtml(formatted);
+    // Sanitize with DOMPurify before trusting — safer than manual escaping alone
+    try {
+      const clean = DOMPurify.sanitize(formatted, { WHOLE_DOCUMENT: false }) as string;
+      return this.sanitizer.bypassSecurityTrustHtml(clean);
+    } catch (e) {
+      return this.sanitizer.bypassSecurityTrustHtml(formatted);
+    }
   }
 
   sendMessage() {
@@ -142,6 +165,8 @@ export class ChatbotComponent implements OnInit {
         timestamp: new Date().toISOString()
       };
       this.messages.push(userMessage);
+      // scroll after adding user message
+      setTimeout(() => this.scrollToBottom(), 50);
       this.chatForm.reset();
 
       // Show loading indicator
@@ -176,6 +201,8 @@ export class ChatbotComponent implements OnInit {
               timestamp: new Date().toISOString()
             };
             this.messages.push(assistantMessage);
+            // scroll to reveal assistant response
+            setTimeout(() => this.scrollToBottom(), 50);
 
             // Update conversation ID if provided
             if (response.data.conversationId) {
@@ -201,6 +228,7 @@ export class ChatbotComponent implements OnInit {
             timestamp: new Date().toISOString()
           };
           this.messages.push(errorMessage);
+          setTimeout(() => this.scrollToBottom(), 50);
         }
       });
     }
@@ -210,10 +238,27 @@ export class ChatbotComponent implements OnInit {
     this.messages = [this.systemMessage];
     this.conversationId = undefined;
     this.snackBar.open('Chat cleared', 'OK', { duration: 2000 });
+    setTimeout(() => this.scrollToBottom(), 50);
   }
 
   // Track by function for performance
   trackByTimestamp(index: number, item: ChatMessage) {
     return item.timestamp;
+  }
+
+  toggleTheme() {
+    this.isDarkTheme = !this.isDarkTheme;
+    try { localStorage.setItem('chatbot-dark', String(this.isDarkTheme)); } catch {}
+  }
+
+  private scrollToBottom() {
+    try {
+      const el = this.messagesContainer?.nativeElement;
+      if (!el) return;
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    } catch (e) {
+      // fallback
+      try { this.messagesContainer.nativeElement.scrollTop = this.messagesContainer.nativeElement.scrollHeight; } catch {}
+    }
   }
 }
