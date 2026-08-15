@@ -52,7 +52,7 @@ export class IncomeListComponent implements OnInit {
     if (!userId) return;
 
     this.isLoading = true;
-    this.incomeService.getIncomeByUser(parseInt(userId)).subscribe({
+    this.incomeService.getIncomeByUser(userId).subscribe({
       next: (incomes) => {
         this.incomes = incomes;
         this.isLoading = false;

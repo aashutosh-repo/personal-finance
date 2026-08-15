@@ -1,8 +1,6 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './service/common/layout/layout/layout.component';
-import { DashboardPage } from './features/dashboard/pages/dashboard/dashboard.page';
 import { AuthGuard } from './guards/auth.guard';
-import { DashboardComponent } from './features/dashboard/components/dashboard/dashboard.component';
 import { register } from 'module';
 
 export const routes: Routes = [
@@ -26,8 +24,7 @@ export const routes: Routes = [
     component: LayoutComponent,
     canActivate: [AuthGuard], // Protect entire layout from unauthenticated access
     children: [
-      {path: 'dashboard', 
-        component: DashboardPage},
+      { path: 'dashboard', loadComponent: () => import('./features/dashboard/components/dashboard/dashboard.component').then((m) => m.DashboardComponent) },
       {
         path: 'profile',
         loadComponent: () =>import('./features/auth/user-profile.component').then((m) => m.UserProfileComponent) 
@@ -46,7 +43,19 @@ export const routes: Routes = [
       },
       {
         path: 'chatbot',
-        loadComponent: () =>import('./features/dashboard/chatbot.component').then((m) => m.ChatbotComponent)
+        loadComponent: () =>import('./features/dashboard/components/chatbot/chatbot.component').then((m) => m.ChatbotComponent)
+      },
+      {
+        path: 'investments',
+        loadComponent: () => import('./features/dashboard/pages/investments/investments.page').then(m => m.InvestmentsPage)
+      },
+      {
+        path: 'debts',
+        loadComponent: () => import('./features/dashboard/pages/debts/debts.page').then(m => m.DebtsPage)
+      },
+      {
+        path: 'monthly-overview',
+        loadComponent: () => import('./features/dashboard/pages/monthly-overview/monthly-overview.page').then(m => m.MonthlyOverviewPage)
       },
     ],
   },

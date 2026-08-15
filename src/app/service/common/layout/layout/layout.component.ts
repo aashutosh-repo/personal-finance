@@ -16,6 +16,8 @@ import { SidebarComponent } from '../../../../shared/sidebar/sidebar.component';
 export class LayoutComponent {
   private router = inject(Router);
 
+  lastSelected: string | null = null;
+
   onMenuSelect(menuId: string) {
     // Navigate based on the menu ID
     const routeMap: { [key: string]: string } = {
@@ -24,15 +26,17 @@ export class LayoutComponent {
       'budgets': '/v1/budgets',
       'income': '/v1/income',
       'chatbot': '/v1/chatbot',
-      'Investment': '/v1/dashboard', // placeholder
-      'Debt': '/v1/dashboard', // placeholder
-      'Monthly Overview': '/v1/dashboard', // placeholder
-      'Account': '/v1/profile'
+      'investments': '/v1/investments',
+      'debts': '/v1/debts',
+      'monthly-overview': '/v1/monthly-overview',
+      'profile': '/v1/profile'
     };
 
     const route = routeMap[menuId];
+    console.log('Layout onMenuSelect:', menuId, '->', route);
+    this.lastSelected = menuId;
     if (route) {
-      this.router.navigate([route]);
+      this.router.navigateByUrl(route);
     }
   }
 }

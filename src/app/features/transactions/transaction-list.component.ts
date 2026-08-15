@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TransactionService } from '../../service/tansaction/transaction.service';
 import { AuthService } from '../../service/auth/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Transaction, ExpenseType, TransactionType } from '../../../model/transaction.model';
+import { Transaction, ExpenseType, TransactionType, IncomeSource } from '../../../model/transaction.model';
 import { isPlatformBrowser } from '@angular/common';
 
 @Component({
@@ -21,10 +21,18 @@ export class TransactionListComponent implements OnInit {
   transactionForm: FormGroup;
   editingId: number | null = null;
   transactionTypes = Object.values(TransactionType);
-  expenseCategories = Object.values(ExpenseType);
+  expenseCategories: string[] = Object.values(ExpenseType);
 
   displayedColumns: string[] = ['date', 'category', 'description', 'amount', 'type', 'actions'];
+  transactionType = TransactionType.DEBIT;
   expenseTypes = Object.values(ExpenseType);
+  incomeSources = Object.values(IncomeSource);
+
+  get categoryOptions(): string[] {
+    return this.transactionType === TransactionType.DEBIT
+      ? this.expenseTypes
+      : this.incomeSources;
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -45,6 +53,17 @@ export class TransactionListComponent implements OnInit {
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
+        this.transactionForm.get('txnType')?.valueChanges.subscribe(type => {
+        if (type === 'DEBIT') {
+          this.expenseCategories = Object.values(ExpenseType);
+        } else if (type === 'CREDIT') {
+          this.expenseCategories = Object.values(IncomeSource);
+        }
+
+        // Reset the selected category whenever transaction type changes
+        this.transactionForm.get('expenseCategory')?.reset();
+      });
+
       this.loadTransactions();
     }
   }
@@ -52,6 +71,7 @@ export class TransactionListComponent implements OnInit {
 
   loadTransactions() {
     const userId = this.authService.getCurrentUserID();
+    console.log('Current User ID:', userId); // Debugging line
     if (!userId) return;
 
     this.isLoading = true;
@@ -72,13 +92,15 @@ export class TransactionListComponent implements OnInit {
       this.isLoading = true;
 
       const userId = this.authService.getCurrentUserID();
+      console.log('Current User ID:', userId); // Debugging line
       if (!userId) return;
 
       const transactionData: Transaction = {
         ...this.transactionForm.value,
-        userId: parseInt(userId),
+        userId: userId,
         txnAmount: parseFloat(this.transactionForm.value.txnAmount)
       };
+      console.log('Transaction Data:', transactionData); // Debugging line
 
       if (this.editingId) {
         // Update existing transaction

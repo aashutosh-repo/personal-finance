@@ -13,7 +13,7 @@ import { DomSanitizer } from '@angular/platform-browser';
   imports: [CommonModule, FormsModule, ExpenseChartComponent, InvestmentChartComponent, 
     DebtChartComponent],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent {
 

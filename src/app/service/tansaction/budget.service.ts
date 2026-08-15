@@ -24,7 +24,7 @@ export class BudgetService {
   /**
    * Get all budgets for a specific user
    */
-  getBudgetsByUser(userId: number): Observable<BudgetResponse[]> {
+  getBudgetsByUser(userId: string): Observable<BudgetResponse[]> {
     return this.http.get<BudgetResponse[]>(`${this.BASE_URL}/user/${userId}`, {withCredentials: true});
   }
 
@@ -35,6 +35,7 @@ export class BudgetService {
     return this.http.get<BudgetResponse[]>(`${this.BASE_URL}/user/${userId}/month/${month}`, {withCredentials: true});
   }
 
+  
   /**
    * Get a specific budget by ID
    */
@@ -45,7 +46,7 @@ export class BudgetService {
   /**
    * Update an existing budget
    */
-  updateBudget(id: number, budgetData: BudgetRequest): Observable<BudgetResponse> {
+  updateBudget(id: string, budgetData: BudgetRequest): Observable<BudgetResponse> {
     return this.http.put<BudgetResponse>(`${this.BASE_URL}/${id}`, budgetData, {withCredentials: true});
   }
 

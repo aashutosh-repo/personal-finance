@@ -1,0 +1,25 @@
+<div class="monthly-overview">
+  <h2>Monthly Overview — {{ monthLabel }}</h2>
+
+  <section class="charts">
+    <div class="chart-card">
+      <app-expense-chart [months]="[monthLabel]" [income]="incomeData" [expenses]="expenseData"></app-expense-chart>
+    </div>
+
+    <div class="chart-card">
+      <app-debt-chart [bankLoan]="0" [salaryAdvance]="0" [personalDebt]="0"></app-debt-chart>
+    </div>
+  </section>
+
+  <section class="details">
+    <h3>Category Breakdown</h3>
+    <ul>
+      <li *ngFor="let c of categories">{{c.label}}: {{c.value | number}}</li>
+    </ul>
+
+    <h3>Budgets</h3>
+    <ul>
+      <li *ngFor="let b of budgetStatuses">{{b.category}} — Budget: {{b.budget}} Actual: {{b.actual}} <span *ngIf="b.exceeded">(Exceeded)</span></li>
+    </ul>
+  </section>
+</div>

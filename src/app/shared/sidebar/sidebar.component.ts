@@ -18,16 +18,17 @@ export class SidebarComponent {
     { label: 'Budget', icon: '💰', id: 'budgets' },
     { label: 'Income', icon: '📈', id: 'income' },
     { label: 'Chatbot', icon: '🤖', id: 'chatbot' },
-    { label: 'Investments', icon: '📗', id: 'Investment' },
-    { label: 'Debts', icon: '💳', id: 'Debt' },
-    { label: 'Monthly Overview', icon: '📅', id: 'Monthly Overview' },
-    { label: 'Account', icon: '👤', id: 'Account' }
+    { label: 'Investments', icon: '📗', id: 'investments' },
+    { label: 'Debts', icon: '💳', id: 'debts' },
+    { label: 'Monthly Overview', icon: '📅', id: 'monthly-overview' },
+    { label: 'Account', icon: '👤', id: 'profile' }
   ];
 
   selected = 'Dashboard';
 
   select(item: any) {
     this.selected = item.label;
+    console.log('Sidebar select ->', item.id, item.label);
     this.menuSelect.emit(item.id);
   }
 

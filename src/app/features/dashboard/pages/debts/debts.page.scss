@@ -1,0 +1,6 @@
+.debts-page { padding: 16px; }
+.debts-page .summary { margin: 8px 0 16px; }
+.debts-page .total { font-weight: 600; font-size: 1.1rem; color: #c53030 }
+.tx-table { width: 100%; border-collapse: collapse; }
+.tx-table th, .tx-table td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+.tx-table .amount { text-align: right; }

@@ -1,6 +1,6 @@
 export interface ChatMessage {
   id?: string;
-  userId: number;
+  userId: string;
   role: 'user' | 'assistant'; // user or assistant
   content: string;
   timestamp?: string;
@@ -8,6 +8,7 @@ export interface ChatMessage {
 }
 
 export interface ChatRequest {
+  userId: string
   message: string;
   conversationId?: string;
 }

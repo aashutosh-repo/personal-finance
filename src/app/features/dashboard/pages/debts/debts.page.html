@@ -1,0 +1,26 @@
+<div class="debts-page">
+  <h2>Debts</h2>
+
+  <div *ngIf="loading">Loading...</div>
+
+  <div class="summary">
+    <div class="total">Total Debt: {{ total | number:'1.0-2' }}</div>
+    <div class="actions"><a class="btn" routerLink="/v1/transactions">Add Debt</a></div>
+  </div>
+
+  <div class="list" *ngIf="!loading">
+    <div *ngIf="transactions.length === 0">No debt transactions found.</div>
+    <table *ngIf="transactions.length > 0" class="tx-table">
+      <thead>
+        <tr><th>Date</th><th>Description</th><th>Amount</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of transactions">
+          <td>{{ t.dateOfExpense | date }}</td>
+          <td>{{ t.description }}</td>
+          <td class="amount">{{ t.txnAmount | number:'1.0-2' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
