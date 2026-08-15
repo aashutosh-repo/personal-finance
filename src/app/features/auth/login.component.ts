@@ -19,6 +19,7 @@ import { LoginResponse } from '../../../model/loginRequest.model';
 export class LoginComponent {
 
   hide = true;
+  isLoading = false;
   loginForm: FormGroup;
 
   constructor(private fb: FormBuilder,
@@ -40,14 +41,24 @@ onSubmit() {
       if (!isPlatformBrowser(this.platformId)) {
         return;
       }
+      this.isLoading = true;
       this.authService.login(this.loginForm.value).subscribe({
         next: (response) => {
+          this.isLoading = false;
           this.authService.setSessionItem('user', JSON.stringify(response.user));
           this.snackBar.open('Login successful!', 'OK', { duration: 3000 });
           this.router.navigate(['/v1/dashboard']); // redirect to home page
         },
         error: (err) => {
-          this.snackBar.open(err.message || 'Login failed', 'Close', { duration: 4000 });
+          // Show a friendly message for authentication failures and avoid exposing raw HTTP errors
+          this.isLoading = false;
+          if (err && err.status === 401) {
+            this.snackBar.open('Wrong email or password. Please try again.', 'Close', { duration: 5000 });
+          } else if (err && err.error && err.error.message) {
+            this.snackBar.open(err.error.message, 'Close', { duration: 5000 });
+          } else {
+            this.snackBar.open('Login failed. Please try again later.', 'Close', { duration: 5000 });
+          }
         }
       });
     }

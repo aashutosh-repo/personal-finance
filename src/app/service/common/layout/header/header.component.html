@@ -41,14 +41,12 @@
       <!-- <span class="username">{{ userDetails?.userName }}</span> -->
       <img src="assets/icons/user-icon.svg" alt="User Icon" class="user-icon"/>
     </div>
-  @if (showUserDetails) {
-    <div class="user-details-dropdown">
-      <p><strong>USERID:</strong> {{ userDetails?.userName }}</p>
-      <p><strong>NAME:</strong> {{ userDetails?.firstName }} {{ userDetails?.lastName }}</p>
-      <p><strong>LAST LOGIN:</strong> {{ userDetails?.lastLogin | date: 'short' }}</p>
-      <button type="button" (click)="logout()">Logout</button>    
-    </div>
-  }
+  <div class="user-details-dropdown" *ngIf="showUserDetails">
+    <p><strong>USERID:</strong> {{ userDetails?.userName }}</p>
+    <p><strong>NAME:</strong> {{ userDetails?.firstName }} {{ userDetails?.lastName }}</p>
+    <p><strong>LAST LOGIN:</strong> {{ userDetails?.lastLogin | date: 'short' }}</p>
+    <button type="button" (click)="logout()">Logout</button>
+  </div>
 </mat-toolbar>
 
 <!-- Navigation Panel (for smaller screens) -->
