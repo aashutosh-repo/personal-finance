@@ -1,8 +1,11 @@
 export interface UserProfile {
-  id: number;
+  id?: number | string;
+  userId?: string;
   email: string;
+  username?: string;
   firstName?: string;
   lastName?: string;
+  fullName?: string;
   userName?: string;
   profilePicture?: string;
   phoneNumber?: string;
@@ -10,11 +13,13 @@ export interface UserProfile {
   address?: string;
   city?: string;
   country?: string;
+  countryCode?: string;
   currency?: string;
   createdAt?: string;
   updatedAt?: string;
   twoFactorEnabled?: boolean;
   emailVerified?: boolean;
+  phoneVerified?: boolean;
 }
 
 export interface RegistrationRequest {

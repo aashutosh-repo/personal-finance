@@ -8,13 +8,13 @@ import { environment } from '../../../environments/environment.prod';
   providedIn: 'root'
 })
 export class UserService {
-  private readonly BASE_URL = environment.apiUrl + '/api/v1/users';
+  private readonly BASE_URL = environment.apiUrl + '/api/v1/auth/user';
   private http = inject(HttpClient);
 
   /**
    * Get user profile by ID
    */
-  getUserProfile(userId: number): Observable<UserProfile> {
+  getUserProfile(userId: string): Observable<UserProfile> {
     return this.http.get<UserProfile>(`${this.BASE_URL}/${userId}`, {withCredentials: true});
   }
 
@@ -28,14 +28,14 @@ export class UserService {
   /**
    * Update user profile
    */
-  updateProfile(userId: number, profileData: UpdateProfileRequest): Observable<UserProfile> {
+  updateProfile(userId: string, profileData: UpdateProfileRequest): Observable<UserProfile> {
     return this.http.put<UserProfile>(`${this.BASE_URL}/${userId}`, profileData, {withCredentials: true});
   }
 
   /**
    * Change password
    */
-  changePassword(userId: number, changePasswordData: ChangePasswordRequest): Observable<ChangePasswordResponse> {
+  changePassword(userId: string, changePasswordData: ChangePasswordRequest): Observable<ChangePasswordResponse> {
     return this.http.post<ChangePasswordResponse>(`${this.BASE_URL}/${userId}/change-password`, changePasswordData, {withCredentials: true});
   }
 
@@ -56,7 +56,7 @@ export class UserService {
   /**
    * Upload profile picture
    */
-  uploadProfilePicture(userId: number, file: File): Observable<UserProfile> {
+  uploadProfilePicture(userId: string, file: File): Observable<UserProfile> {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post<UserProfile>(`${this.BASE_URL}/${userId}/profile-picture`, formData, {withCredentials: true});

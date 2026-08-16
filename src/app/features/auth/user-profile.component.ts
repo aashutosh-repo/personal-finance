@@ -59,7 +59,7 @@ export class UserProfileComponent implements OnInit {
     const userId = this.authService.getCurrentUserID();
     if (userId) {
       this.isLoading = true;
-      this.userService.getUserProfile(parseInt(userId)).subscribe({
+      this.userService.getUserProfile(userId).subscribe({
         next: (profile) => {
           this.userProfile = profile;
           this.profileForm.patchValue({
@@ -107,7 +107,7 @@ export class UserProfileComponent implements OnInit {
     if (!userId) return;
 
     this.isLoading = true;
-    this.userService.uploadProfilePicture(parseInt(userId), this.selectedFile).subscribe({
+    this.userService.uploadProfilePicture(userId, this.selectedFile).subscribe({
       next: (profile) => {
         this.userProfile = profile;
         this.snackBar.open('Profile picture updated successfully', 'OK', { duration: 3000 });
@@ -127,7 +127,7 @@ export class UserProfileComponent implements OnInit {
       if (!userId) return;
 
       this.isLoading = true;
-      this.userService.updateProfile(parseInt(userId), this.profileForm.value).subscribe({
+      this.userService.updateProfile(userId, this.profileForm.value).subscribe({
         next: (profile) => {
           this.userProfile = profile;
           this.snackBar.open('Profile updated successfully', 'OK', { duration: 3000 });
@@ -148,7 +148,7 @@ export class UserProfileComponent implements OnInit {
       if (!userId) return;
 
       this.isPasswordChanging = true;
-      this.userService.changePassword(parseInt(userId), this.passwordForm.value).subscribe({
+      this.userService.changePassword(userId, this.passwordForm.value).subscribe({
         next: (response) => {
           if (response.success) {
             this.snackBar.open('Password changed successfully', 'OK', { duration: 3000 });
