@@ -17,6 +17,24 @@
   padding: 12px;
 }
 
+.monthly-overview .budget-chart-card {
+  min-height: 320px;
+}
+
+.monthly-overview .chart-wrap {
+  position: relative;
+  height: 260px;
+}
+
+.monthly-overview .no-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: #666;
+  font-weight: 500;
+}
+
 .monthly-overview .details {
   margin-top: 20px;
   background: #fff;

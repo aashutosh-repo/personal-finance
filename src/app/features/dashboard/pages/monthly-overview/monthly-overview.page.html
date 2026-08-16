@@ -6,6 +6,21 @@
       <app-expense-chart [months]="[monthLabel]" [income]="incomeData" [expenses]="expenseData"></app-expense-chart>
     </div>
 
+    <div class="chart-card budget-chart-card">
+      <h3>Budget vs Expense</h3>
+      <div class="chart-wrap" *ngIf="budgetStatuses.length; else noBudgetData">
+        <canvas
+          baseChart
+          [data]="budgetChartData"
+          [options]="budgetChartOptions"
+          type="bar">
+        </canvas>
+      </div>
+      <ng-template #noBudgetData>
+        <div class="no-data">No budget data available for this month.</div>
+      </ng-template>
+    </div>
+
     <div class="chart-card">
       <app-debt-chart [bankLoan]="0" [salaryAdvance]="0" [personalDebt]="0"></app-debt-chart>
     </div>
