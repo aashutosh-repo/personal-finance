@@ -21,6 +21,7 @@ export class UserProfileComponent implements OnInit {
   isLoading = false;
   isPasswordChanging = false;
   showPasswordForm = false;
+  isEditingProfile = false;
   profilePicturePreview: string | null = null;
   selectedFile: File | null = null;
 
@@ -62,16 +63,7 @@ export class UserProfileComponent implements OnInit {
       this.userService.getUserProfile(userId).subscribe({
         next: (profile) => {
           this.userProfile = profile;
-          this.profileForm.patchValue({
-            firstName: profile.firstName || '',
-            lastName: profile.lastName || '',
-            phoneNumber: profile.phoneNumber || '',
-            dateOfBirth: profile.dateOfBirth || '',
-            address: profile.address || '',
-            city: profile.city || '',
-            country: profile.country || '',
-            currency: profile.currency || 'USD'
-          });
+          this.applyProfileValues();
           if (profile.profilePicture) {
             this.profilePicturePreview = profile.profilePicture;
           }
@@ -83,6 +75,34 @@ export class UserProfileComponent implements OnInit {
         }
       });
     }
+  }
+
+  private applyProfileValues(): void {
+    if (!this.userProfile) {
+      return;
+    }
+
+    this.profileForm.patchValue({
+      firstName: this.userProfile.firstName || '',
+      lastName: this.userProfile.lastName || '',
+      phoneNumber: this.userProfile.phoneNumber || '',
+      dateOfBirth: this.userProfile.dateOfBirth || '',
+      address: this.userProfile.address || '',
+      city: this.userProfile.city || '',
+      country: this.userProfile.country || '',
+      currency: this.userProfile.currency || 'USD'
+    });
+    this.profileForm.disable();
+    this.isEditingProfile = false;
+  }
+
+  startProfileEdit(): void {
+    this.profileForm.enable();
+    this.isEditingProfile = true;
+  }
+
+  cancelProfileEdit(): void {
+    this.applyProfileValues();
   }
 
   onProfilePictureSelected(event: any) {
@@ -127,9 +147,10 @@ export class UserProfileComponent implements OnInit {
       if (!userId) return;
 
       this.isLoading = true;
-      this.userService.updateProfile(userId, this.profileForm.value).subscribe({
+      this.userService.updateProfile(userId, this.profileForm.getRawValue()).subscribe({
         next: (profile) => {
           this.userProfile = profile;
+          this.applyProfileValues();
           this.snackBar.open('Profile updated successfully', 'OK', { duration: 3000 });
           this.isLoading = false;
         },
