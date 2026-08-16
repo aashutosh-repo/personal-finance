@@ -45,6 +45,18 @@ export const routes: Routes = [
         path: 'chatbot',
         loadComponent: () =>import('./features/dashboard/components/chatbot/chatbot.component').then((m) => m.ChatbotComponent)
       },
+      {
+        path: 'investments',
+        loadComponent: () => import('./features/dashboard/pages/investments/investments.page').then((m) => m.InvestmentsPage)
+      },
+      {
+        path: 'debts',
+        loadComponent: () => import('./features/dashboard/pages/debts/debts.page').then((m) => m.DebtsPage)
+      },
+      {
+        path: 'monthly-overview',
+        loadComponent: () => import('./features/dashboard/pages/monthly-overview/monthly-overview.page').then((m) => m.MonthlyOverviewPage)
+      },
     ],
   },
 
