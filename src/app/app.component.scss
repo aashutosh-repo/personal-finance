@@ -41,29 +41,49 @@
 //   font-style: italic;
 // }
 
+* {
+  box-sizing: border-box;
+}
+
 html, body {
-  height: 100%;
+  min-height: 100%;
+  height: auto;
+  width: 100%;
+  max-width: 100%;
   margin: 0;
-  overflow: hidden; /* 🚫 No scroll for main body */
+}
+
+body {
+  min-height: 100vh;
+}
+
+.body-content {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  display: block;
 }
 
 .app-container {
   display: flex;
-  height: 100vh; /* ✅ Full screen height */
-  overflow: hidden; /* 🚫 Prevent scroll on main layout */
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
 }
 
 app-sidebar {
   width: 250px;
   flex-shrink: 0;
   background-color: #1e1e2d;
-  height: 100%; /* ✅ Sidebar covers full height */
+  height: 100%;
 }
 
 .content {
-  flex: 1;
-  height: 100%;
-  overflow: hidden; /* 🚫 Main content won't scroll */
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: #f5f6fa;

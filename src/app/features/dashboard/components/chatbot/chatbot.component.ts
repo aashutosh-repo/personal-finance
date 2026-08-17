@@ -7,6 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ChatMessage, ChatRequest } from '../../../../../model/chatbot.model';
 import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
 import DOMPurify from 'dompurify';
 
 @Component({
@@ -39,6 +40,7 @@ export class ChatbotComponent implements OnInit {
     private authService: AuthService,
     private snackBar: MatSnackBar,
     private sanitizer: DomSanitizer,
+    private route: ActivatedRoute,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.chatForm = this.fb.group({
@@ -50,6 +52,11 @@ export class ChatbotComponent implements OnInit {
     if (isPlatformBrowser(this.platformId)) {
       // Initialize with system message
       this.messages.push(this.systemMessage);
+      const prefilledPrompt = this.route.snapshot.queryParamMap.get('prompt');
+      if (prefilledPrompt) {
+        this.chatForm.patchValue({ message: prefilledPrompt });
+      }
+
       // load persisted theme preference or respect OS preference
       try {
         const stored = localStorage.getItem('chatbot-dark');
