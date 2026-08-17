@@ -1,39 +1,115 @@
-<div class="login-container">
-  <mat-card class="login-card">
-    <h2 class="login-title">Welcome Back</h2>
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Email</mat-label>
-        <input matInput placeholder="Enter your email" formControlName="email" type="email" />
-        <mat-error *ngIf="loginForm.get('email')?.hasError('required')">Email is required</mat-error>
-        <mat-error *ngIf="loginForm.get('email')?.hasError('email')">Enter a valid email</mat-error>
-      </mat-form-field>
+<div class="login-shell">
+  <div class="brand-panel">
+    <div class="brand-mark">💰</div>
+    <div class="brand-header">Daily Tracker</div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Password</mat-label>
-        <input
-          matInput
-          [type]="hide ? 'password' : 'text'"
-          placeholder="Enter your password"
-          formControlName="password"
-        />
-        <button mat-icon-button matSuffix type="button" (click)="hide = !hide">
-          <mat-icon>{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
+    <div class="brand-copy">
+      <h1>Take control of your financial journey.</h1>
+      <p>Track your income, expenses, budgets and investments — all in one place.</p>
+    </div>
+
+    <ul class="feature-list" aria-label="Key benefits">
+      <li>Track your spending</li>
+      <li>Manage your budget</li>
+      <li>Build better financial habits</li>
+    </ul>
+
+    <div class="decorative-visual" aria-hidden="true">
+      <div class="chart-card">
+        <span class="mini-label">Cash Flow</span>
+        <div class="bars">
+          <span style="height: 30%"></span>
+          <span style="height: 52%"></span>
+          <span style="height: 66%"></span>
+          <span style="height: 48%"></span>
+          <span style="height: 88%"></span>
+          <span style="height: 72%"></span>
+        </div>
+      </div>
+      <div class="floating-pill pill-one">+₹4.8K</div>
+      <div class="floating-pill pill-two">Savings</div>
+    </div>
+  </div>
+
+  <div class="form-panel">
+    <div class="login-form-container">
+      <div class="intro-block">
+        <p class="eyebrow">Welcome back</p>
+        <h2>Sign in to continue managing your finances.</h2>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <div class="field-wrap">
+          <label for="login-email">Email address</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-icon matPrefix>email</mat-icon>
+            <input
+              id="login-email"
+              matInput
+              [errorStateMatcher]="emailErrorMatcher"
+              placeholder="Enter your email"
+              formControlName="email"
+              type="email"
+              autocomplete="email"
+            />
+            <mat-error *ngIf="loginForm.get('email')?.hasError('required')">Email is required</mat-error>
+            <mat-error *ngIf="loginForm.get('email')?.hasError('email')">Enter a valid email</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="field-wrap">
+          <label for="login-password">Password</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-icon matPrefix>lock</mat-icon>
+            <input
+              id="login-password"
+              matInput
+              [errorStateMatcher]="passwordErrorMatcher"
+              [type]="hide ? 'password' : 'text'"
+              placeholder="Enter your password"
+              formControlName="password"
+              autocomplete="current-password"
+            />
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              aria-label="Toggle password visibility"
+              (click)="hide = !hide"
+            >
+              <mat-icon>{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Password is required</mat-error>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+              Minimum 6 characters required
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="meta-row">
+          <label class="remember-me" for="remember-me">
+            <input id="remember-me" type="checkbox" name="rememberMe" aria-label="Remember me" />
+            <span>Remember me</span>
+          </label>
+        </div>
+
+        <button
+          mat-raised-button
+          color="primary"
+          class="login-button"
+          type="submit"
+          [disabled]="!loginForm.valid || isLoading"
+        >
+          <span *ngIf="!isLoading">Sign In →</span>
+          <span *ngIf="isLoading">Signing in...</span>
         </button>
-        <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Password is required</mat-error>
-        <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
-          Minimum 6 characters required
-        </mat-error>
-      </mat-form-field>
+      </form>
 
-      <button mat-raised-button color="primary" class="full-width" [disabled]="!loginForm.valid">
-        Login
-      </button>
-    </form>
-
-    <p class="register-text">
-      Don't have an account?
-      <a routerLink="/v1/register">Register here</a>
-    </p>
-  </mat-card>
+      <p class="register-text">
+        Don't have an account?
+        <a routerLink="/v1/register">Create account</a>
+      </p>
+    </div>
+  </div>
 </div>
+
