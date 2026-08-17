@@ -1,36 +1,93 @@
-<div class="budget-container">
+<div class="budget-page">
   <mat-card class="budget-card">
-    <mat-card-header>
-      <mat-card-title>Budget Management</mat-card-title>
-      <button mat-raised-button color="primary" (click)="showAddForm ? resetForm() : showAddForm = true">
-        {{ showAddForm ? 'Cancel' : 'Add New Budget' }}
-      </button>
-    </mat-card-header>
-
     <mat-card-content>
-      <!-- Add/Edit Form -->
+      <div class="page-header">
+        <div>
+          <h1>Budget Management</h1>
+          <p class="page-subtitle">Plan your spending, track your limits, and stay on top of your finances.</p>
+        </div>
+
+        <button mat-raised-button color="primary" class="primary-action" (click)="showAddForm ? resetForm() : showAddForm = true">
+          {{ showAddForm ? 'Cancel' : 'Add New Budget' }}
+        </button>
+      </div>
+
+      <div class="summary-grid" *ngIf="!isLoading && !loadError">
+        <div class="summary-card">
+          <div class="summary-icon summary-total">
+            <mat-icon>account_balance_wallet</mat-icon>
+          </div>
+          <div class="summary-meta">
+            <span class="summary-label">Total Budget</span>
+            <strong>{{ formatCurrency(totalBudgetAmount) }}</strong>
+            <small>Across active budgets</small>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-icon summary-spent">
+            <mat-icon>payments</mat-icon>
+          </div>
+          <div class="summary-meta">
+            <span class="summary-label">Total Spent</span>
+            <strong>{{ formatCurrency(totalSpentAmount) }}</strong>
+            <small>Current usage</small>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-icon summary-remaining">
+            <mat-icon>savings</mat-icon>
+          </div>
+          <div class="summary-meta">
+            <span class="summary-label">Remaining</span>
+            <strong [ngClass]="{ 'negative': totalRemainingAmount < 0, 'positive': totalRemainingAmount >= 0 }">
+              {{ formatCurrency(totalRemainingAmount) }}
+            </strong>
+            <small>{{ totalRemainingAmount >= 0 ? 'Available to spend' : 'Over budget' }}</small>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-icon summary-count">
+            <mat-icon>analytics</mat-icon>
+          </div>
+          <div class="summary-meta">
+            <span class="summary-label">Active Budgets</span>
+            <strong>{{ activeBudgetCount }}</strong>
+            <small>{{ activeBudgetCount === 1 ? 'Budget in motion' : 'Budgets in motion' }}</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading-skeleton" *ngIf="isLoading">
+        <div class="skeleton-card short"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-table">
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+          <div class="skeleton-row"></div>
+        </div>
+      </div>
+
+      <div class="error-state" *ngIf="loadError">
+        <mat-icon>error_outline</mat-icon>
+        <h3>Unable to load your budgets right now.</h3>
+        <button mat-stroked-button color="primary" (click)="retryLoadBudgets()">Retry</button>
+      </div>
+
       <form [formGroup]="budgetForm" (ngSubmit)="onAddBudget()" *ngIf="showAddForm" class="budget-form">
         <h3>{{ editingId ? 'Edit Budget' : 'Create New Budget' }}</h3>
 
-        <!-- Category -->
-        <!-- <mat-form-field appearance="outline" class="full-width">
+        <mat-form-field appearance="outline">
           <mat-label>Expense Category</mat-label>
-          <mat-select formControlName="categoryId">
-            <mat-option *ngFor="let category of categories" [value]="category.id">
-              {{ category.name }}
-            </mat-option>
+          <mat-select formControlName="category" placeholder="Select category">
+            <mat-option *ngFor="let category of expenseCategories" [value]="category">{{ category }}</mat-option>
           </mat-select>
-          <mat-error>Category is required</mat-error>
-        </mat-form-field> -->
+        </mat-form-field>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Expense Category</mat-label>
-            <mat-select formControlName="category" placeholder="Select category">
-              <mat-option *ngFor="let category of expenseCategories" [value]="category">{{ category }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-        <!-- Budget Name -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Budget Name</mat-label>
           <input matInput formControlName="name" placeholder="e.g., Monthly Grocery Budget" />
@@ -38,7 +95,6 @@
           <mat-error *ngIf="budgetForm.get('name')?.hasError('minlength')">Name must be at least 3 characters</mat-error>
         </mat-form-field>
 
-        <!-- Amount and Currency -->
         <div class="form-row">
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>Budget Amount</mat-label>
@@ -58,7 +114,6 @@
           </mat-form-field>
         </div>
 
-        <!-- Period and Duration -->
         <div class="form-row">
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>Period</mat-label>
@@ -77,7 +132,6 @@
           </mat-form-field>
         </div>
 
-        <!-- End Date and Alert Threshold -->
         <div class="form-row">
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>End Date</mat-label>
@@ -92,7 +146,6 @@
           </mat-form-field>
         </div>
 
-        <!-- Alert Frequency and Description -->
         <div class="form-row">
           <mat-form-field appearance="outline" class="form-field">
             <mat-label>Alert Frequency</mat-label>
@@ -113,112 +166,153 @@
           <button mat-raised-button color="primary" [disabled]="!budgetForm.valid || isLoading">
             {{ editingId ? 'Update Budget' : 'Create Budget' }}
           </button>
-          <button mat-raised-button type="button" (click)="resetForm()">Cancel</button>
+          <button mat-stroked-button type="button" (click)="resetForm()">Cancel</button>
         </div>
       </form>
 
-      <!-- Budget List -->
-      <div class="budget-list" *ngIf="!isLoading && budgets.length > 0">
-        <h3>Your Budgets</h3>
-        <mat-table [dataSource]="budgets" class="budget-table">
-          <!-- Category Column -->
-          <ng-container matColumnDef="category">
-            <mat-header-cell *matHeaderCellDef>Category</mat-header-cell>
-            <mat-cell *matCellDef="let element">{{ element.categoryName }}</mat-cell>
-          </ng-container>
+      <div class="filter-toolbar" *ngIf="!isLoading && !loadError && !showAddForm">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search budgets...</mat-label>
+          <span matPrefix><mat-icon>search</mat-icon></span>
+          <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" />
+        </mat-form-field>
 
-          <!-- Name Column -->
-          <ng-container matColumnDef="name">
-            <mat-header-cell *matHeaderCellDef>Budget Name</mat-header-cell>
-            <mat-cell *matCellDef="let element">{{ element.name }}</mat-cell>
-          </ng-container>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>All Categories</mat-label>
+          <mat-select [(ngModel)]="selectedCategory" (selectionChange)="applyFilters()">
+            <mat-option value="all">All Categories</mat-option>
+            <mat-option *ngFor="let category of expenseCategories" [value]="category.toLowerCase()">{{ category }}</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-          <!-- Amount Column -->
-          <ng-container matColumnDef="amount">
-            <mat-header-cell *matHeaderCellDef>Amount</mat-header-cell>
-            <mat-cell *matCellDef="let element">{{ element.amount | currency }}</mat-cell>
-          </ng-container>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>All Periods</mat-label>
+          <mat-select [(ngModel)]="selectedPeriod" (selectionChange)="applyFilters()">
+            <mat-option value="all">All Periods</mat-option>
+            <mat-option value="monthly">Monthly</mat-option>
+            <mat-option value="quarterly">Quarterly</mat-option>
+            <mat-option value="yearly">Yearly</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-          <!-- Current Spending Column -->
-          <ng-container matColumnDef="spending">
-            <mat-header-cell *matHeaderCellDef>Spent</mat-header-cell>
-            <mat-cell *matCellDef="let element">{{ element.currentSpending | currency }}</mat-cell>
-          </ng-container>
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>All Status</mat-label>
+          <mat-select [(ngModel)]="selectedStatus" (selectionChange)="applyFilters()">
+            <mat-option value="all">All Status</mat-option>
+            <mat-option value="active">Active</mat-option>
+            <mat-option value="inactive">Inactive</mat-option>
+            <mat-option value="healthy">Healthy</mat-option>
+            <mat-option value="approaching-limit">Approaching Limit</mat-option>
+            <mat-option value="near-limit">Near Limit</mat-option>
+            <mat-option value="exceeded">Exceeded</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-          <!-- Percentage Used Column -->
-          <ng-container matColumnDef="percentage">
-            <mat-header-cell *matHeaderCellDef>Used %</mat-header-cell>
-            <mat-cell *matCellDef="let element">
-              <div class="percentage-container">
-                <mat-progress-bar 
-                  mode="determinate" 
-                  [value]="element.percentageUsed || 0"
-                  [ngClass]="'progress-' + (element.budgetStatus ? element.budgetStatus.toLowerCase() : 'safe')">
-                </mat-progress-bar>
-                <span class="percentage-text" [ngClass]="'status-' + (element.budgetStatus ? element.budgetStatus.toLowerCase() : 'safe')">
-                  {{ element.percentageUsed || 0 }}%
-                </span>
-              </div>
-            </mat-cell>
-          </ng-container>
-
-          <!-- Period Column -->
-          <ng-container matColumnDef="period">
-            <mat-header-cell *matHeaderCellDef>Period</mat-header-cell>
-            <mat-cell *matCellDef="let element">{{ element.period }}</mat-cell>
-          </ng-container>
-
-          <!-- Start Date Column -->
-          <ng-container matColumnDef="startDate">
-            <mat-header-cell *matHeaderCellDef>Start Date</mat-header-cell>
-            <mat-cell *matCellDef="let element">{{ element.startDate | date: 'short' }}</mat-cell>
-          </ng-container>
-
-          <!-- End Date Column -->
-          <ng-container matColumnDef="endDate">
-            <mat-header-cell *matHeaderCellDef>End Date</mat-header-cell>
-            <mat-cell *matCellDef="let element">{{ element.endDate | date: 'short' }}</mat-cell>
-          </ng-container>
-
-          <!-- Status Column -->
-          <ng-container matColumnDef="status">
-            <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
-            <mat-cell *matCellDef="let element">
-              <span class="status-badge" [ngClass]="'status-' + (element.isActive ? 'active' : 'inactive')">
-                {{ element.isActive ? 'Active' : 'Inactive' }}
-              </span>
-            </mat-cell>
-          </ng-container>
-
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
-            <mat-cell *matCellDef="let element">
-              <button mat-icon-button (click)="editBudget(element)" matTooltip="Edit">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button (click)="deleteBudget(element.id)" matTooltip="Delete">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </mat-cell>
-          </ng-container>
-
-          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-          <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-        </mat-table>
+        <button mat-stroked-button color="primary" *ngIf="filtersActive" class="clear-btn" (click)="clearFilters()">
+          Clear Filters
+        </button>
       </div>
 
-      <!-- Empty State -->
-      <div class="empty-state" *ngIf="!isLoading && budgets.length === 0 && !showAddForm">
+      <div class="budget-list" *ngIf="!isLoading && !loadError && !showAddForm && filteredBudgets.length > 0">
+        <div class="section-header">
+          <h3>Your Budgets</h3>
+        </div>
+
+        <div class="table-wrapper">
+          <table mat-table [dataSource]="filteredBudgets" class="budget-table">
+            <ng-container matColumnDef="category">
+              <th mat-header-cell *matHeaderCellDef>Category</th>
+              <td mat-cell *matCellDef="let element">{{ element.categoryName || 'Uncategorized' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Budget Name</th>
+              <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef>Budget</th>
+              <td mat-cell *matCellDef="let element">{{ formatCurrency(element.amount) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="spending">
+              <th mat-header-cell *matHeaderCellDef>Spent</th>
+              <td mat-cell *matCellDef="let element">{{ formatCurrency(getSpentAmount(element)) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="progress">
+              <th mat-header-cell *matHeaderCellDef>Progress</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="progress-cell">
+                  <div class="progress-meta">
+                    <span>{{ formatCurrency(getSpentAmount(element)) }} / {{ formatCurrency(element.amount) }}</span>
+                  </div>
+                  <div class="progress-track">
+                    <span class="progress-fill" [style.width.%]="getProgressBarValue(element)" [ngClass]="getBudgetHealth(element)"></span>
+                  </div>
+                  <div class="progress-foot">
+                    <span [ngClass]="'health-' + getBudgetHealth(element).toLowerCase().replace(' ', '-')">
+                      {{ getBudgetPercent(element) | number: '1.0-0' }}%
+                    </span>
+                    <span class="remaining-note">{{ getRemainingAmount(element) >= 0 ? formatCurrency(getRemainingAmount(element)) + ' remaining' : formatCurrency(getAbsoluteRemainingAmount(element)) + ' over budget' }}</span>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="period">
+              <th mat-header-cell *matHeaderCellDef>Period</th>
+              <td mat-cell *matCellDef="let element">{{ element.period || 'Monthly' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="status-stack">
+                  <span class="status-badge" [ngClass]="isBudgetActive(element) ? 'status-active' : 'status-inactive'">
+                    {{ isBudgetActive(element) ? 'Active' : 'Inactive' }}
+                  </span>
+                  <span class="status-badge health-badge" [ngClass]="'status-' + getBudgetHealth(element).toLowerCase().replace(' ', '-')">
+                    {{ getBudgetHealth(element) }}
+                  </span>
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let element">
+                <div class="action-buttons">
+                  <button mat-icon-button color="primary" (click)="editBudget(element)" matTooltip="Edit budget">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="deleteBudget(element.id)" matTooltip="Delete budget">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!isLoading && !loadError && !showAddForm && filteredBudgets.length === 0 && budgets.length === 0">
         <mat-icon>account_balance_wallet</mat-icon>
-        <p>No budgets created yet</p>
-        <button mat-raised-button color="primary" (click)="showAddForm = true">Create First Budget</button>
+        <h3>No budgets yet</h3>
+        <p>Create your first budget to start tracking your spending.</p>
+        <button mat-raised-button color="primary" (click)="showAddForm = true">+ Create Budget</button>
       </div>
 
-      <!-- Loading State -->
-      <div class="loading-state" *ngIf="isLoading">
-        <mat-spinner [diameter]="40"></mat-spinner>
-        <p>Loading budgets...</p>
+      <div class="insights-card" *ngIf="!isLoading && !loadError && !showAddForm && budgetInsights.length">
+        <div class="section-header insights-header">
+          <h3>Budget Insights</h3>
+        </div>
+        <ul class="insights-list">
+          <li *ngFor="let insight of budgetInsights">{{ insight }}</li>
+        </ul>
       </div>
     </mat-card-content>
   </mat-card>
