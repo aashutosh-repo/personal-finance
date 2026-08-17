@@ -1,7 +1,261 @@
 <div class="dashboard-container">
   <div class="dashboard-scroll-container">
+    <section class="kpi-section" aria-label="Financial summary">
+      <div class="kpi-grid" *ngIf="!isLoading && !hasError; else dashboardState">
+        <article class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon income-icon">↗</span>
+            <span class="kpi-label">Total Income</span>
+          </div>
+          <div class="kpi-value">{{ formatCurrency(totalIncome) }}</div>
+          <div class="kpi-trend" [ngClass]="incomeTrend.direction === 'up' ? 'positive' : incomeTrend.direction === 'down' ? 'negative' : 'neutral'">
+            <span class="trend-arrow">{{ incomeTrend.direction === 'up' ? '▲' : incomeTrend.direction === 'down' ? '▼' : '•' }}</span>
+            {{ incomeTrend.label }}
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon expense-icon">↘</span>
+            <span class="kpi-label">Total Expense</span>
+          </div>
+          <div class="kpi-value">{{ formatCurrency(totalExpense) }}</div>
+          <div class="kpi-trend" [ngClass]="expenseTrend.direction === 'up' ? 'positive' : expenseTrend.direction === 'down' ? 'negative' : 'neutral'">
+            <span class="trend-arrow">{{ expenseTrend.direction === 'up' ? '▲' : expenseTrend.direction === 'down' ? '▼' : '•' }}</span>
+            {{ expenseTrend.label }}
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon balance-icon">₹</span>
+            <span class="kpi-label">Net Balance</span>
+          </div>
+          <div class="kpi-value" [ngClass]="getNetBalanceClass()">{{ formatCurrency(netBalance) }}</div>
+          <div class="kpi-trend" [ngClass]="balanceTrend.direction === 'up' ? 'positive' : balanceTrend.direction === 'down' ? 'negative' : 'neutral'">
+            <span class="trend-arrow">{{ balanceTrend.direction === 'up' ? '▲' : balanceTrend.direction === 'down' ? '▼' : '•' }}</span>
+            {{ balanceTrend.label }}
+          </div>
+        </article>
+
+        <article class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-icon savings-icon">%</span>
+            <span class="kpi-label">Savings Rate</span>
+          </div>
+          <div class="kpi-value" [ngClass]="getSavingsRateClass()">{{ savingsRate.toFixed(1) }}%</div>
+          <div class="kpi-trend" [ngClass]="savingsTrend.direction === 'up' ? 'positive' : savingsTrend.direction === 'down' ? 'negative' : 'neutral'">
+            <span class="trend-arrow">{{ savingsTrend.direction === 'up' ? '▲' : savingsTrend.direction === 'down' ? '▼' : '•' }}</span>
+            {{ savingsTrend.label }}
+          </div>
+        </article>
+      </div>
+
+      <ng-template #dashboardState>
+        <div class="dashboard-state loading" *ngIf="isLoading">
+          <div class="kpi-grid skeleton-grid">
+            <div class="kpi-card skeleton-card" *ngFor="let item of [1,2,3,4]"></div>
+          </div>
+        </div>
+
+        <div class="dashboard-state error" *ngIf="hasError">
+          <div class="state-copy">
+            <span>Unable to load dashboard data right now.</span>
+            <button type="button" class="retry-button" (click)="retryDashboardData()">Retry</button>
+          </div>
+        </div>
+      </ng-template>
+    </section>
+
+    <section class="quick-actions-card" aria-label="Quick actions">
+      <div class="card-header">
+        <h3>Quick Actions</h3>
+      </div>
+
+      <div class="quick-actions-grid" role="list" aria-label="Quick actions list">
+        <button
+          *ngFor="let action of quickActions"
+          type="button"
+          class="quick-action-button"
+          [ngClass]="action.tone"
+          [routerLink]="action.route"
+          [attr.aria-label]="action.label"
+        >
+          <span class="quick-action-icon" aria-hidden="true">{{ action.icon }}</span>
+          <span class="quick-action-label">{{ action.label }}</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="health-card" aria-label="Financial health">
+      <div class="card-header health-header">
+        <h3>Financial Health</h3>
+      </div>
+
+      <div class="health-content">
+        <div class="health-main">
+          <div class="health-score-row">
+            <div class="health-score-value">{{ financialHealthScore }} <span>/ 100</span></div>
+            <span class="health-badge" [ngClass]="financialHealthTone">{{ financialHealthStatus }}</span>
+          </div>
+
+          <div class="health-progress" aria-label="Financial health score">
+            <div class="health-progress-fill" [ngClass]="financialHealthTone" [style.width.%]="financialHealthScore"></div>
+          </div>
+        </div>
+
+        <div class="health-side">
+          <div class="health-panel">
+            <div class="health-panel-header">
+              <span class="health-panel-title">Warnings</span>
+            </div>
+
+            <ul class="health-factors" *ngIf="financialHealthReasons.length; else healthFallback">
+              <li *ngFor="let item of financialHealthReasons" [ngClass]="item.tone">
+                <span class="factor-icon">{{ item.tone === 'positive' ? '✓' : item.tone === 'warning' ? '⚠' : '•' }}</span>
+                {{ item.text }}
+              </li>
+            </ul>
+
+            <ng-template #healthFallback>
+              <div class="health-empty">Add financial activity to calculate your score.</div>
+            </ng-template>
+          </div>
+
+          <div class="recommendations" *ngIf="financialHealthRecommendations.length">
+            <div class="health-panel-header">
+              <span class="health-panel-title">Recommendations</span>
+            </div>
+            <ul>
+              <li *ngFor="let recommendation of financialHealthRecommendations">{{ recommendation }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="dashboard-grid">
+      <section class="ai-insight-card" aria-label="AI financial insight">
+        <div class="card-header ai-header">
+          <h3>🤖 AI Financial Insight</h3>
+          <button type="button" class="ask-ai-button" (click)="openChatbot()">Ask AI →</button>
+        </div>
+
+        <div class="ai-insight-body" *ngIf="!aiInsightLoading; else aiInsightLoadingState">
+          <p>{{ aiInsight }}</p>
+          <small *ngIf="aiInsightError" class="ai-note">AI is temporarily unavailable. Please try again.</small>
+          <button *ngIf="aiInsightError" type="button" class="retry-button secondary" (click)="retryAiInsight()">Retry</button>
+        </div>
+
+        <ng-template #aiInsightLoadingState>
+          <div class="ai-loading">
+            <div class="state-loader"></div>
+            <span>AI is analyzing your finances...</span>
+          </div>
+        </ng-template>
+      </section>
+
+      <section class="recent-transactions-card" aria-label="Recent transactions">
+        <div class="card-header">
+          <h3>Recent Transactions</h3>
+          <a class="view-all" routerLink="/v1/transactions">View All →</a>
+        </div>
+
+        <div class="transaction-list" *ngIf="!recentTransactionsLoading && !recentTransactionsError && recentTransactions.length; else recentTransactionsState">
+          <div class="transaction-item" *ngFor="let item of recentTransactions">
+            <div class="transaction-left">
+              <div class="transaction-icon" aria-hidden="true">{{ item.icon }}</div>
+              <div class="transaction-copy">
+                <div class="transaction-main-row">
+                  <span class="transaction-title">{{ item.title }}</span>
+                  <span class="transaction-amount" [ngClass]="item.isIncome ? 'positive' : 'negative'">
+                    {{ formatSignedAmount(item.amount) }}
+                  </span>
+                </div>
+                <div class="transaction-meta-row">
+                  <span class="transaction-category">{{ item.category }}</span>
+                  <span class="transaction-date">{{ item.dateLabel }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #recentTransactionsState>
+          <div class="transaction-state loading" *ngIf="recentTransactionsLoading">
+            <div class="skeleton-list">
+              <div class="skeleton-row" *ngFor="let item of [1,2,3]"></div>
+            </div>
+          </div>
+
+          <div class="transaction-state empty" *ngIf="!recentTransactionsLoading && !recentTransactionsError && recentTransactions.length === 0">
+            <p>No transactions yet</p>
+            <span>Create your first transaction to start tracking your finances.</span>
+            <a class="cta-link" routerLink="/v1/transactions">Add transaction</a>
+          </div>
+
+          <div class="transaction-state error" *ngIf="recentTransactionsError">
+            <p>We couldn’t load your recent transactions.</p>
+            <button type="button" class="retry-button" (click)="retryRecentTransactions()">Retry</button>
+          </div>
+        </ng-template>
+      </section>
+
+      <section class="budget-overview-card" aria-label="Budget overview">
+        <div class="card-header">
+          <h3>Budget Overview</h3>
+          <a class="view-all" routerLink="/v1/budgets">View All →</a>
+        </div>
+
+        <div class="budget-list" *ngIf="!budgetOverviewLoading && !budgetOverviewError && budgetOverviewItems.length; else budgetOverviewState">
+          <div class="budget-item" *ngFor="let item of budgetOverviewItems">
+            <div class="budget-row">
+              <span class="budget-label">{{ item.label }}</span>
+              <span class="budget-text">{{ formatCurrency(item.spentAmount) }} / {{ formatCurrency(item.budgetAmount) }}</span>
+            </div>
+
+            <div class="progress-track">
+              <div class="progress-bar"
+                   [ngClass]="item.status"
+                   [style.width.%]="clampPercentage(item.percentage)">
+              </div>
+            </div>
+
+            <div class="budget-footer">
+              <span class="budget-percent">{{ item.percentage.toFixed(0) }}%</span>
+              <span class="budget-status" [ngClass]="item.status">
+                {{ item.status === 'over' ? 'Over Budget' : item.status === 'high' ? 'High usage' : 'Healthy usage' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #budgetOverviewState>
+          <div class="transaction-state loading" *ngIf="budgetOverviewLoading">
+            <div class="skeleton-list">
+              <div class="skeleton-row budget-skeleton" *ngFor="let item of [1,2,3]"></div>
+            </div>
+          </div>
+
+          <div class="transaction-state empty" *ngIf="!budgetOverviewLoading && !budgetOverviewError && budgetOverviewItems.length === 0">
+            <p>No budgets created</p>
+            <span>Create a budget to monitor your spending.</span>
+            <a class="cta-link" routerLink="/v1/budgets">Create a budget</a>
+          </div>
+
+          <div class="transaction-state error" *ngIf="budgetOverviewError">
+            <p>We couldn’t load your budget overview.</p>
+            <button type="button" class="retry-button" (click)="retryBudgetOverview()">Retry</button>
+          </div>
+        </ng-template>
+      </section>
+    </div>
+
     <app-expense-chart></app-expense-chart>
-    <app-debt-chart></app-debt-chart>
-    <app-investment-chart></app-investment-chart>
+
+    <div class="chart-pair-grid">
+      <app-debt-chart></app-debt-chart>
+      <app-investment-chart></app-investment-chart>
+    </div>
   </div>
 </div>
