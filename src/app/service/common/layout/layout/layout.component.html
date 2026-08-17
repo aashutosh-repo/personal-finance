@@ -1,10 +1,14 @@
 <app-header></app-header>
 
-<div class="layout-container">
+<div class="layout-container" [class.sidebar-collapsed]="isSidebarCollapsed">
   <aside class="sidebar-container">
-    <app-sidebar (menuSelect)="onMenuSelect($event)"></app-sidebar>
+    <app-sidebar
+      [isCollapsed]="isSidebarCollapsed"
+      (collapsedChange)="isSidebarCollapsed = $event"
+      (menuSelect)="onMenuSelect($event)"
+    ></app-sidebar>
   </aside>
-  
+
   <main class="main-content">
     <router-outlet></router-outlet>
   </main>

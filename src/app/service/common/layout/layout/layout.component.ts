@@ -16,6 +16,7 @@ import { SidebarComponent } from '../../../../shared/sidebar/sidebar.component';
 export class LayoutComponent {
   private router = inject(Router);
 
+  isSidebarCollapsed = false;
   lastSelected: string | null = null;
 
   onMenuSelect(menuId: string) {
@@ -23,6 +24,7 @@ export class LayoutComponent {
     const routeMap: { [key: string]: string } = {
       'Dashboard': '/v1/dashboard',
       'transactions': '/v1/transactions',
+      'expenses': '/v1/transactions',
       'budgets': '/v1/budgets',
       'income': '/v1/income',
       'chatbot': '/v1/chatbot',
