@@ -1,12 +1,14 @@
-<div *ngIf="isBrowser">
-  <canvas baseChart
-          [data]="chartData"
-          chartType="pie"
-          [options]="{
-            responsive: true,
-            plugins: {
-              legend: { position: 'right' }
-            }
-          }">
+<div *ngIf="isBrowser && hasDebtData" class="debt-chart-wrap">
+  <canvas
+    baseChart
+    [data]="chartData"
+    chartType="pie"
+    [options]="pieChartOptions">
   </canvas>
+</div>
+
+<div *ngIf="isBrowser && !hasDebtData" class="empty-state-card">
+  <div class="empty-state-icon">📉</div>
+  <h4>No outstanding debt</h4>
+  <p>You’re currently debt-free. Great job!</p>
 </div>
