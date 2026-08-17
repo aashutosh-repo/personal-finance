@@ -1,1 +1,63 @@
-<p>investment-chart works!</p>
+<section class="investment-summary-card" aria-label="Investment summary">
+  <div class="card-header">
+    <h3>Investments</h3>
+    <a class="view-all" routerLink="/v1/investments">View Portfolio →</a>
+  </div>
+
+  <div class="investment-state loading" *ngIf="loading">
+    <div class="state-loader"></div>
+    <span>Loading investment summary...</span>
+  </div>
+
+  <div class="investment-state error" *ngIf="!loading && hasError">
+    <p>Unable to load your investment summary.</p>
+    <a class="cta-link" routerLink="/v1/investments">View investments</a>
+  </div>
+
+  <div class="investment-state empty" *ngIf="!loading && !hasError && !hasData">
+    <p>No investment data yet</p>
+    <a class="cta-link" routerLink="/v1/investments">Review investments</a>
+  </div>
+
+  <div class="investment-summary" *ngIf="!loading && !hasError && hasData">
+    <div class="summary-grid">
+      <div class="metric-block">
+        <span class="metric-label">Portfolio Value</span>
+        <strong class="metric-value">{{ formatCurrency(totalPortfolioValue) }}</strong>
+      </div>
+
+      <div class="metric-block">
+        <span class="metric-label">Invested</span>
+        <strong class="metric-value">{{ formatCurrency(totalInvestedAmount) }}</strong>
+      </div>
+
+      <div class="metric-block highlight">
+        <span class="metric-label">Gain</span>
+        <strong class="metric-value positive">{{ formatSignedAmount(currentGainLoss) }}</strong>
+      </div>
+
+      <div class="metric-block highlight">
+        <span class="metric-label">Return</span>
+        <strong class="metric-value positive">{{ returnPercent.toFixed(1) }}%</strong>
+      </div>
+    </div>
+
+    <div class="distribution-block" *ngIf="distribution.length">
+      <div class="distribution-header">
+        <span>Asset mix</span>
+      </div>
+
+      <div class="distribution-list">
+        <div class="distribution-item" *ngFor="let item of distribution">
+          <div class="distribution-row">
+            <span>{{ item.label }}</span>
+            <span>{{ formatCurrency(item.value) }}</span>
+          </div>
+          <div class="distribution-bar-track">
+            <div class="distribution-bar" [style.width.%]="item.percent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

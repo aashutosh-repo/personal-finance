@@ -1,15 +1,39 @@
-<div class="sidebar">
+<aside class="sidebar" [class.collapsed]="isCollapsed" aria-label="Sidebar navigation">
   <div class="sidebar-header">
-    <h3>Finance Tracker</h3>
-  </div>
-  <div class="menu-container">
-    <div 
-      class="menu-item" 
-      *ngFor="let item of menuItems" 
-      [class.active]="item.label === selected" 
-      (click)="select(item)">
-      <span class="icon">{{ item.icon }}</span>
-      <span class="label">{{ item.label }}</span>
+    <button
+      type="button"
+      class="collapse-toggle"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+      [attr.title]="isCollapsed ? 'Expand navigation' : 'Collapse navigation'"
+    >
+      {{ isCollapsed ? '›' : '‹' }}
+    </button>
+
+    <div class="brand" *ngIf="!isCollapsed">
+      <span class="brand-mark">FT</span>
+      <span class="brand-name">Finance Tracker</span>
     </div>
   </div>
-</div>
+
+  <nav class="menu-container" aria-label="Main navigation">
+    <div class="nav-section" *ngFor="let group of menuGroups">
+      <div class="nav-section-title" *ngIf="!isCollapsed">{{ group.title }}</div>
+
+      <button
+        type="button"
+        class="menu-item"
+        *ngFor="let item of group.items"
+        [class.active]="isActive(item)"
+        [routerLink]="item.route"
+        [routerLinkActive]="'active'"
+        [attr.title]="isCollapsed ? item.label : null"
+        [attr.aria-label]="item.label"
+        (click)="select(item)"
+      >
+        <span class="icon" aria-hidden="true">{{ item.icon }}</span>
+        <span class="label">{{ item.label }}</span>
+      </button>
+    </div>
+  </nav>
+</aside>
