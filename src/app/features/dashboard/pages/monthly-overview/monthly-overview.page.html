@@ -1,40 +1,306 @@
-<div class="monthly-overview">
-  <h2>Monthly Overview — {{ monthLabel }}</h2>
-
-  <section class="charts">
-    <div class="chart-card">
-      <app-expense-chart [months]="[monthLabel]" [income]="incomeData" [expenses]="expenseData"></app-expense-chart>
-    </div>
-
-    <div class="chart-card budget-chart-card">
-      <h3>Budget vs Expense</h3>
-      <div class="chart-wrap" *ngIf="budgetStatuses.length; else noBudgetData">
-        <canvas
-          baseChart
-          [data]="budgetChartData"
-          [options]="budgetChartOptions"
-          type="bar">
-        </canvas>
+<div class="monthly-overview-page">
+  <div class="overview-shell">
+    <header class="overview-header">
+      <div>
+        <p class="eyebrow">Finance snapshot</p>
+        <h1>Monthly Overview</h1>
+        <p class="subtitle">Understand your cash flow, spending, budgets and debt at a glance.</p>
       </div>
-      <ng-template #noBudgetData>
-        <div class="no-data">No budget data available for this month.</div>
-      </ng-template>
+
+      <div class="month-switcher" aria-label="Select month">
+        <button type="button" class="nav-button" (click)="changeMonth(-1)">
+          < Previous Month
+        </button>
+        <div class="month-pill">{{ monthLabel || 'Loading...' }}</div>
+        <button type="button" class="nav-button" (click)="changeMonth(1)">
+          Next Month >
+        </button>
+      </div>
+    </header>
+
+    <div *ngIf="isLoading" class="skeleton-layout">
+      <div class="skeleton-card short"></div>
+      <div class="skeleton-card short"></div>
+      <div class="skeleton-card short"></div>
+      <div class="skeleton-card short"></div>
+      <div class="skeleton-chart"></div>
+      <div class="skeleton-chart"></div>
+      <div class="skeleton-chart"></div>
     </div>
 
-    <div class="chart-card">
-      <app-debt-chart [bankLoan]="0" [salaryAdvance]="0" [personalDebt]="0"></app-debt-chart>
+    <div *ngIf="loadError" class="error-state">
+      <mat-icon>error_outline</mat-icon>
+      <h3>Unable to load monthly overview.</h3>
+      <button mat-stroked-button color="primary" (click)="retryLoad()">Retry</button>
     </div>
-  </section>
 
-  <section class="details">
-    <h3>Category Breakdown</h3>
-    <ul>
-      <li *ngFor="let c of categories">{{c.label}}: {{c.value | number}}</li>
-    </ul>
+    <ng-container *ngIf="!isLoading && !loadError">
+      <section class="summary-grid">
+        <article class="summary-card income-card">
+          <div class="card-icon">
+            <mat-icon>trending_up</mat-icon>
+          </div>
+          <div class="card-content">
+            <span>Total Income</span>
+            <strong>{{ formatCurrency(totalIncome) }}</strong>
+            <small>+{{ formatPercent(savingsRate) }} vs previous month</small>
+          </div>
+        </article>
 
-    <h3>Budgets</h3>
-    <ul>
-      <li *ngFor="let b of budgetStatuses">{{b.category}} — Budget: {{b.budget}} Actual: {{b.actual}} <span *ngIf="b.exceeded">(Exceeded)</span></li>
-    </ul>
-  </section>
+        <article class="summary-card expense-card">
+          <div class="card-icon">
+            <mat-icon>trending_down</mat-icon>
+          </div>
+          <div class="card-content">
+            <span>Total Expense</span>
+            <strong>{{ formatCurrency(totalExpense) }}</strong>
+            <small>-{{ formatPercent(getExpenseDeltaPercent()) }} vs previous month</small>
+          </div>
+        </article>
+
+        <article class="summary-card savings-card">
+          <div class="card-icon">
+            <mat-icon>savings</mat-icon>
+          </div>
+          <div class="card-content">
+            <span>Net Savings</span>
+            <strong>{{ formatCurrency(netSavings) }}</strong>
+            <small>Savings rate: {{ formatPercent(savingsRate) }}</small>
+          </div>
+        </article>
+
+        <article class="summary-card debt-card">
+          <div class="card-icon">
+            <mat-icon>credit_card</mat-icon>
+          </div>
+          <div class="card-content">
+            <span>Total Debt</span>
+            <strong>{{ formatCurrency(totalDebt) }}</strong>
+            <small>Outstanding balance</small>
+          </div>
+        </article>
+      </section>
+
+      <section class="charts-grid">
+        <article class="panel chart-panel">
+          <div class="panel-header">
+            <div>
+              <h3>Cash Flow</h3>
+              <p>Income vs expenses and net savings</p>
+            </div>
+            <div class="micro-summary">
+              <div><span>Income</span><strong>{{ formatCurrency(totalIncome) }}</strong></div>
+              <div><span>Expense</span><strong>{{ formatCurrency(totalExpense) }}</strong></div>
+              <div><span>Savings</span><strong>{{ formatCurrency(netSavings) }}</strong></div>
+            </div>
+          </div>
+
+          <app-expense-chart [months]="[monthLabel]" [income]="incomeData" [expenses]="expenseData"></app-expense-chart>
+        </article>
+
+        <article class="panel chart-panel">
+          <div class="panel-header">
+            <div>
+              <h3>Budget Performance</h3>
+              <p>How your spending compares with your planned budget.</p>
+            </div>
+            <div class="micro-summary compact">
+              <div><span>Budgeted</span><strong>{{ formatCurrency(totalBudgeted) }}</strong></div>
+              <div><span>Spent</span><strong>{{ formatCurrency(totalSpentAgainstBudget) }}</strong></div>
+              <div><span>Remaining</span><strong>{{ formatCurrency(remainingBudget) }}</strong></div>
+            </div>
+          </div>
+
+          <div class="chart-wrap" *ngIf="budgetStatuses.length; else noBudgetData">
+            <canvas baseChart [data]="budgetChartData" [options]="budgetChartOptions" type="bar"></canvas>
+          </div>
+
+          <ng-template #noBudgetData>
+            <div class="empty-chart-state">
+              <mat-icon>bar_chart</mat-icon>
+              <h4>No budget data available for this month.</h4>
+            </div>
+          </ng-template>
+        </article>
+
+        <article class="panel chart-panel">
+          <div class="panel-header">
+            <div>
+              <h3>Debt Overview</h3>
+              <p>Outstanding debt across your accounts.</p>
+            </div>
+          </div>
+
+          <div class="debt-summary" *ngIf="totalDebt > 0; else noDebtData">
+            <div>
+              <span>Total Debt</span>
+              <strong>{{ formatCurrency(totalDebt) }}</strong>
+            </div>
+            <div>
+              <span>Highest Debt</span>
+              <strong>{{ debtBreakdown[0] ? debtBreakdown[0].label : 'N/A' }} — {{ formatCurrency(debtBreakdown[0] ? debtBreakdown[0].value : 0) }}</strong>
+            </div>
+            <div>
+              <span>Number of Debts</span>
+              <strong>{{ debtBreakdown.length }}</strong>
+            </div>
+          </div>
+
+          <ng-template #noDebtData>
+            <div class="empty-chart-state">
+              <mat-icon>account_balance</mat-icon>
+              <h4>No outstanding debt</h4>
+              <p>You’re currently debt-free. Great job!</p>
+            </div>
+          </ng-template>
+
+          <app-debt-chart [bankLoan]="debtBreakdown[0] ? debtBreakdown[0].value : 0" [salaryAdvance]="debtBreakdown[1] ? debtBreakdown[1].value : 0" [personalDebt]="debtBreakdown[2] ? debtBreakdown[2].value : 0"></app-debt-chart>
+        </article>
+      </section>
+
+      <section class="split-grid">
+        <article class="panel">
+          <div class="panel-header compact-header">
+            <div>
+              <h3>Spending by Category</h3>
+              <p>Where your money went this month.</p>
+            </div>
+          </div>
+
+          <div class="category-list" *ngIf="categories.length; else noCategoryData">
+            <div class="category-row" *ngFor="let category of categories">
+              <div class="category-main">
+                <div class="category-pill">{{ category.label.charAt(0).toUpperCase() }}</div>
+                <div class="category-meta">
+                  <strong>{{ category.label }}</strong>
+                  <span>{{ formatCurrency(category.value) }}</span>
+                </div>
+              </div>
+
+              <div class="category-progress">
+                <div class="progress-track">
+                  <span [style.width]="getCategoryProgressStyle(category.value, categories.length ? categories[0].value : 1)"></span>
+                </div>
+                <small>{{ category.percentage.toFixed(0) }}% of total spending</small>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noCategoryData>
+            <div class="empty-state-card">
+              <mat-icon>receipt_long</mat-icon>
+              <h4>No spending recorded this month.</h4>
+            </div>
+          </ng-template>
+        </article>
+
+        <article class="panel donut-panel">
+          <div class="panel-header compact-header">
+            <div>
+              <h3>Category Mix</h3>
+              <p>Top spending split</p>
+            </div>
+          </div>
+
+          <div class="donut-wrap" *ngIf="categories.length; else noDonutData">
+            <div class="donut-chart" [style.background]="getDonutBackground()">
+              <div class="donut-inner">
+                <strong>{{ categories.length }}</strong>
+                <span>categories</span>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noDonutData>
+            <div class="empty-state-card small">
+              <mat-icon>donut_small</mat-icon>
+              <h4>No category data</h4>
+            </div>
+          </ng-template>
+        </article>
+      </section>
+
+      <section class="panel budget-panel">
+        <div class="panel-header compact-header">
+          <div>
+            <h3>Budget Performance</h3>
+            <p>Track how you’re progressing against your limits.</p>
+          </div>
+        </div>
+
+        <div class="budget-performance-grid" *ngIf="budgetStatuses.length; else noBudgetPerformance">
+          <article class="budget-performance-item" *ngFor="let item of budgetStatuses">
+            <div class="budget-row-header">
+              <h4>{{ item.category }}</h4>
+              <span class="health-pill" [ngClass]="getBudgetHealthClass(item)">{{ getBudgetState(item) }}</span>
+            </div>
+
+            <div class="progress-line">
+              <span class="progress-fill" [style.width.%]="getBudgetUsagePercent(item)" [ngClass]="getBudgetHealthClass(item)"></span>
+            </div>
+
+            <div class="budget-meta">
+              <strong>{{ formatCurrency(item.actual) }} / {{ formatCurrency(item.budget) }}</strong>
+              <span>{{ getBudgetUsage(item).toFixed(0) }}%</span>
+            </div>
+
+            <div class="budget-remaining">
+              {{ getBudgetRemaining(item) >= 0 ? formatCurrency(getBudgetRemaining(item)) + ' remaining' : formatCurrency(getBudgetRemainingAbsolute(item)) + ' over budget' }}
+            </div>
+          </article>
+        </div>
+
+        <ng-template #noBudgetPerformance>
+          <div class="empty-state-card">
+            <mat-icon>account_balance_wallet</mat-icon>
+            <h4>No budgets configured yet.</h4>
+          </div>
+        </ng-template>
+      </section>
+
+      <section class="insights-grid">
+        <article class="panel">
+          <div class="panel-header compact-header">
+            <div>
+              <h3>Financial Insights</h3>
+              <p>What the numbers are telling you.</p>
+            </div>
+          </div>
+
+          <ul class="insights-list" *ngIf="insightMessages.length; else noInsights">
+            <li *ngFor="let insight of insightMessages">{{ insight }}</li>
+          </ul>
+
+          <ng-template #noInsights>
+            <div class="empty-state-card small">
+              <mat-icon>insights</mat-icon>
+              <h4>No insights available yet.</h4>
+            </div>
+          </ng-template>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header compact-header">
+            <div>
+              <h3>Monthly Financial Health</h3>
+              <p>Score: {{ financialHealthScore }} / 100</p>
+            </div>
+            <span class="status-pill" [ngClass]="financialHealthStatus.toLowerCase().replace(' ', '-')">{{ financialHealthStatus }}</span>
+          </div>
+
+          <div class="health-score-row">
+            <div class="score-badge">{{ financialHealthScore }}/100</div>
+          </div>
+
+          <div class="score-bar">
+            <span [style.width.%]="financialHealthScore"></span>
+          </div>
+
+          <ul class="health-factors" *ngIf="financialHealthFactors.length">
+            <li *ngFor="let factor of financialHealthFactors">{{ factor }}</li>
+          </ul>
+        </article>
+      </section>
+    </ng-container>
+  </div>
 </div>
