@@ -14,7 +14,8 @@ import { ChatbotService } from '../../../../service/tansaction/chatbot.service';
 import { Transaction } from '../../../../../model/transaction.model';
 import { BudgetResponse } from '../../../../../model/budget.model';
 import { Router, RouterModule } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
+import { fork } from 'child_process';
 
 interface KpiTrend {
   value: number;
@@ -343,40 +344,67 @@ export class DashboardComponent implements OnInit {
       }
     });
 
-    this.analyticsService.getMonthlyContext(userId, currentMonth).subscribe({
-      next: (context) => {
-        this.totalIncome = Number(context.totalIncome || 0);
-        this.totalExpense = Number(context.totalExpense || 0);
+    forkJoin({
+      context: this.analyticsService.getMonthlyContext(userId, currentMonth).pipe(catchError(() => of(null))),
+      previousContext: this.analyticsService.getMonthlyContext(userId, previousMonth).pipe(catchError(() => of(null))),
+      transactions : this.transactionService.getExpensesByUser(userId).pipe(catchError(() => of([] as Transaction[])))
+    }).subscribe({
+      next: ({ context, previousContext, transactions }) => {
+        const currentSnapshot = this.buildMonthlySnapshot(transactions, currentMonth);
+        const previousSnapshot = this.buildMonthlySnapshot(transactions, previousMonth);
+        if (!context && currentSnapshot.count == 0) {
+          this.hasError = true;
+          this.isLoading = false;
+          return;
+        }
+        this.totalIncome = currentSnapshot.count > 0 ? currentSnapshot.totalIncome : Number(context?.totalIncome || 0);
+        this.totalExpense = currentSnapshot.count > 0 ? currentSnapshot.totalExpense : Number(context?.totalExpense || 0);
         this.netBalance = this.totalIncome - this.totalExpense;
         this.savingsRate = this.calculateSavingsRate(this.totalIncome, this.netBalance);
         this.currentPeriodLabel = this.formatMonthLabel(currentMonth);
         this.calculateFinancialHealth();
         this.generateAiInsight(userId);
 
-        this.analyticsService.getMonthlyContext(userId, previousMonth).subscribe({
-          next: (previousContext) => {
-            const previousIncome = Number(previousContext.totalIncome || 0);
-            const previousExpense = Number(previousContext.totalExpense || 0);
-            const previousNet = previousIncome - previousExpense;
-            const previousSavingsRate = this.calculateSavingsRate(previousIncome, previousNet);
+        const previousIncome = previousSnapshot.count > 0 ? previousSnapshot.totalIncome : Number(previousContext?.totalIncome || 0);
+        const previousExpense = previousSnapshot.count > 0 ? previousSnapshot.totalExpense : Number(previousContext?.totalExpense || 0);
+        const previousNet = previousIncome - previousExpense;
+        const previousSavingsRate = this.calculateSavingsRate(previousIncome, previousNet);
 
-            this.incomeTrend = this.buildTrend(this.totalIncome, previousIncome, 'income');
-            this.expenseTrend = this.buildTrend(this.totalExpense, previousExpense, 'expense');
-            this.balanceTrend = this.buildTrend(this.netBalance, previousNet, 'balance');
-            this.savingsTrend = this.buildTrend(this.savingsRate, previousSavingsRate, 'savings');
-            this.isLoading = false;
-          },
-          error: () => {
-            this.applyFallbackTrendStatus();
-            this.isLoading = false;
-          }
-        });
+        this.incomeTrend = this.buildTrend(this.totalIncome, previousIncome, 'income');
+        this.expenseTrend = this.buildTrend(this.totalExpense, previousExpense, 'expense');
+        this.balanceTrend = this.buildTrend(this.netBalance, previousNet, 'balance');
+        this.savingsTrend = this.buildTrend(this.savingsRate, previousSavingsRate, 'savings');
+        this.isLoading = false;
       },
       error: () => {
         this.hasError = true;
         this.isLoading = false;
       }
     });
+  }
+
+  buildMonthlySnapshot(transaction: Transaction[], monthKey: string): {
+
+    count: number;
+    totalIncome: number;
+    totalExpense: number;
+  } {
+    let count = 0;
+    let totalIncome = 0;
+    let totalExpense = 0;
+    (transaction || [])
+      .filter((txn) => (txn.dateOfExpense || '' ).startsWith(monthKey))
+      .forEach((txn) => {
+        count++;
+        const amount = Number(txn.txnAmount || 0);
+        const isIncome = (txn.txnType || '').toUpperCase() === 'CREDIT';
+        if (isIncome) {
+          totalIncome += amount;
+        } else {
+          totalExpense += amount;
+        }
+      });
+    return { count, totalIncome, totalExpense };
   }
 
   private generateAiInsight(userId: string): void {

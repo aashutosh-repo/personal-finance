@@ -34,6 +34,30 @@ export interface Transaction {
   description: string
 }
 
+export interface V2Transaction {
+  id?: number;
+  userId: number
+  type: 'INCOME' | 'EXPENSE' | 'INVESTMENT' | 'TRANSFER';
+  status?: string;
+  amount: string;
+  currency: string;
+  transactionDate: string;
+  categoryId?: number;
+  description?: string;
+  incomeSource?: string;
+  investmentType?: string;
+  paymentMethod?: string;
+  dateOfExpense: string
+}
+
+export interface V2TransactionListResponse {
+  transactions: V2Transaction[];
+  totalCount : number;
+  pageSize: number;
+  pageNumber: number;
+  totalPage: number;
+}
+
 export interface TransactionTotals {
   
 }
