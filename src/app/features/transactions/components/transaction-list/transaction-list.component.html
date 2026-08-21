@@ -1,1 +1,230 @@
-<p>transaction-list works!</p>
+<div class="transaction-container">
+  <mat-card class="transaction-form-card" *ngIf="showAddForm">
+    <mat-card-header>
+      <mat-card-title>{{ editingId ? 'Edit Transaction' : 'Add New Transaction' }}</mat-card-title>
+      <button mat-icon-button (click)="resetForm()" class="close-button" aria-label="Close transaction form">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="transactionForm" (ngSubmit)="onAddTransaction()" class="transaction-form">
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Transaction Type</mat-label>
+            <mat-select formControlName="txnType" placeholder="Select transaction type">
+              <mat-option *ngFor="let type of transactionTypes" [value]="type">{{ type }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="transactionForm.get('txnType')?.hasError('required')">
+              Transaction type is required
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Category</mat-label>
+            <mat-select formControlName="expenseCategory" placeholder="Select category">
+              <mat-option *ngFor="let category of expenseCategories" [value]="category">{{ category }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="transactionForm.get('expenseCategory')?.hasError('required')">
+              Category is required
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Amount</mat-label>
+            <input matInput type="number" step="0.01" formControlName="txnAmount" />
+            <mat-error>Amount is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Date</mat-label>
+            <input matInput type="date" formControlName="dateOfExpense" />
+            <mat-error>Date is required</mat-error>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <input matInput formControlName="description" />
+        </mat-form-field>
+
+        <div class="button-group">
+          <button mat-raised-button color="primary" [disabled]="!transactionForm.valid || isLoading">
+            {{ editingId ? 'Update Transaction' : 'Add Transaction' }}
+          </button>
+          <button mat-raised-button type="button" (click)="resetForm()">Cancel</button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="transaction-card">
+    <mat-card-header class="page-header">
+      <div class="page-header-copy">
+        <p class="eyebrow">Finance</p>
+        <mat-card-title>Transactions</mat-card-title>
+        <p class="subtitle">Manage and review your financial activity.</p>
+      </div>
+      <button mat-raised-button color="primary" class="primary-action" (click)="showAddForm = true" *ngIf="!showAddForm">
+        + Add Transaction
+      </button>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="summary-grid" *ngIf="!isLoading && !hasError">
+        <div class="summary-card income" *ngFor="let card of summaryCards">
+          <span class="summary-label">{{ card.label }}</span>
+          <strong class="summary-value" [ngClass]="card.tone">{{ card.value }}</strong>
+        </div>
+      </div>
+
+      <div class="toolbar" *ngIf="!isLoading && !hasError">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-icon matPrefix>search</mat-icon>
+          <mat-label>Search transactions...</mat-label>
+          <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" />
+        </mat-form-field>
+
+        <div class="filters-row">
+          <mat-form-field appearance="outline">
+            <mat-label>All Categories</mat-label>
+            <mat-select [(ngModel)]="selectedCategory" (selectionChange)="applyFilters()">
+              <mat-option value="All">All Categories</mat-option>
+              <mat-option *ngFor="let category of uniqueCategories" [value]="category">{{ category }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>All Types</mat-label>
+            <mat-select [(ngModel)]="selectedType" (selectionChange)="applyFilters()">
+              <mat-option value="All">All Types</mat-option>
+              <mat-option value="DEBIT">Debit</mat-option>
+              <mat-option value="CREDIT">Credit</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <div class="date-range">
+            <mat-form-field appearance="outline">
+              <mat-label>From</mat-label>
+              <input matInput type="date" [(ngModel)]="startDate" (ngModelChange)="applyFilters()" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>To</mat-label>
+              <input matInput type="date" [(ngModel)]="endDate" (ngModelChange)="applyFilters()" />
+            </mat-form-field>
+          </div>
+        </div>
+
+        <button mat-stroked-button color="primary" type="button" class="clear-button" (click)="clearFilters()">
+          Clear Filters
+        </button>
+      </div>
+
+      <div class="table-section" *ngIf="!isLoading && !hasError && transactions.length > 0">
+        <div class="table-header">
+          <h3>Recent Transactions</h3>
+          <span class="results-meta" *ngIf="filteredTransactions.length > 0">{{ pageInfo }}</span>
+        </div>
+
+        <div class="table-wrapper" *ngIf="filteredTransactions.length > 0; else noFilteredResults">
+          <mat-table [dataSource]="paginatedTransactions" class="transaction-table">
+            <ng-container matColumnDef="date">
+              <mat-header-cell *matHeaderCellDef>Date</mat-header-cell>
+              <mat-cell *matCellDef="let element">{{ formatFriendlyDate(element.dateOfExpense) }}</mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="category">
+              <mat-header-cell *matHeaderCellDef>Category</mat-header-cell>
+              <mat-cell *matCellDef="let element">
+                <span class="category-badge">{{ element.expenseCategory }}</span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="description">
+              <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
+              <mat-cell *matCellDef="let element">{{ getDescriptionLabel(element.description) }}</mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="amount">
+              <mat-header-cell *matHeaderCellDef>Amount</mat-header-cell>
+              <mat-cell *matCellDef="let element">
+                <span [ngClass]="element.txnType === 'DEBIT' ? 'amount-negative' : 'amount-positive'">
+                  {{ formatAmount(element) }}
+                </span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="type">
+              <mat-header-cell *matHeaderCellDef>Type</mat-header-cell>
+              <mat-cell *matCellDef="let element">
+                <span [ngClass]="element.txnType === 'DEBIT' ? 'type-badge debit' : 'type-badge credit'">
+                  {{ element.txnType === 'DEBIT' ? 'Debit' : 'Credit' }}
+                </span>
+              </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+              <mat-cell *matCellDef="let element">
+                <button mat-icon-button (click)="editTransaction(element)" matTooltip="Edit transaction" aria-label="Edit transaction">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button (click)="deleteTransaction(element.id)" matTooltip="Delete transaction" aria-label="Delete transaction">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+          </mat-table>
+
+          <div class="pagination" *ngIf="filteredTransactions.length > 10">
+            <button mat-stroked-button type="button" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+            <div class="page-numbers">
+              <button
+                mat-stroked-button
+                type="button"
+                *ngFor="let page of [].constructor(totalPages); let i = index"
+                [class.active]="currentPage === i + 1"
+                (click)="goToPage(i + 1)"
+              >
+                {{ i + 1 }}
+              </button>
+            </div>
+            <button mat-stroked-button type="button" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+          </div>
+        </div>
+
+        <ng-template #noFilteredResults>
+          <div class="empty-state compact">
+            <mat-icon>filter_alt_off</mat-icon>
+            <p>No transactions match your filters.</p>
+            <button mat-raised-button color="primary" type="button" (click)="clearFilters()">Clear Filters</button>
+          </div>
+        </ng-template>
+      </div>
+
+      <div class="empty-state" *ngIf="!isLoading && !hasError && transactions.length === 0">
+        <mat-icon>receipt</mat-icon>
+        <p>No transactions yet</p>
+        <span>Start tracking your finances by adding your first transaction.</span>
+        <button mat-raised-button color="primary" type="button" (click)="showAddForm = true">+ Add Transaction</button>
+      </div>
+
+      <div class="loading-state" *ngIf="isLoading">
+        <mat-spinner [diameter]="42"></mat-spinner>
+        <p>Loading transactions...</p>
+      </div>
+
+      <div class="error-state" *ngIf="hasError">
+        <mat-icon>error_outline</mat-icon>
+        <p>Unable to load transactions.</p>
+        <button mat-raised-button color="primary" type="button" (click)="retryLoadTransactions()">Retry</button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

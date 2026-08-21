@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './service/common/layout/layout/layout.component';
 import { AuthGuard } from './guards/auth.guard';
-import { register } from 'module';
 
 export const routes: Routes = [
   // PUBLIC ROUTES - No Layout (Login/Register only)
@@ -12,10 +11,6 @@ export const routes: Routes = [
   {
     path: 'register',
     loadComponent: () => import('./features/auth/register.component').then((m) => m.RegisterComponent),
-  },
-  {
-    path: 'v1/register',
-    loadComponent: () => import('./features/auth/pages/register/register.component').then((m) => m.RegisterComponent),
   },
 
   // PROTECTED ROUTES - With Layout (Sidebar + Header + Footer)
@@ -35,7 +30,7 @@ export const routes: Routes = [
       },
       {
         path: 'transactions',
-        loadComponent: () =>import('./features/transactions/transaction-list.component').then((m) => m.TransactionListComponent),
+        loadComponent: () =>import('./features/transactions/components/transaction-list/transaction-list.component').then((m) => m.TransactionListComponent),
       },
       {
         path: 'income',
