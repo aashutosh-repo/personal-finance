@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { ExpenseChartComponent } from '../../pages/charts/expense-chart/expense-chart.component';
 import { InvestmentChartComponent } from '../../pages/charts/investment-chart/investment-chart.component';
 import { DebtChartComponent } from '../../pages/charts/debt-chart/debt-chart.component';
@@ -14,7 +14,7 @@ import { ChatbotService } from '../../../../service/tansaction/chatbot.service';
 import { Transaction } from '../../../../../model/transaction.model';
 import { BudgetResponse } from '../../../../../model/budget.model';
 import { Router, RouterModule } from '@angular/router';
-import { catchError, forkJoin, of } from 'rxjs';
+import { catchError, forkJoin, of, Subscription } from 'rxjs';
 import { fork } from 'child_process';
 
 interface KpiTrend {
@@ -31,7 +31,7 @@ interface KpiTrend {
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
 
   private iconRegistry = inject(MatIconRegistry);
   private sanitizer = inject(DomSanitizer);
@@ -44,6 +44,7 @@ export class DashboardComponent implements OnInit {
   private router = inject(Router);
 
   private currentUserId: string | null = null;
+  private transactionSyncSubscription?: Subscription;
 
   isLoading = true;
   hasError = false;
@@ -120,9 +121,21 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
+    this.transactionSyncSubscription = this.transactionService.transactionChange$.subscribe(() => {
+      if (!this.currentUserId) {
+        return;
+      }
+      this.loadDashboardData(this.currentUserId);
+      this.loadRecentTransactions(this.currentUserId);
+      this.loadBudgetOverview(this.currentUserId);
+    });
+
     this.retryDashboardData();
   }
 
+  ngOnDestroy(): void {
+    this.transactionSyncSubscription?.unsubscribe();
+  }
   retryDashboardData(): void {
     if (!this.currentUserId) {
       this.isLoading = false;
@@ -170,6 +183,7 @@ export class DashboardComponent implements OnInit {
 
     this.transactionService.getExpensesByUser(userId).subscribe({
       next: (transactions) => {
+        console.log('Recent Transaction',transactions)
         this.recentTransactions = (transactions || [])
           .map((txn) => this.toRecentTransactionView(txn))
           .filter((txn) => txn && !!txn.title)
@@ -350,8 +364,14 @@ export class DashboardComponent implements OnInit {
       transactions : this.transactionService.getExpensesByUser(userId).pipe(catchError(() => of([] as Transaction[])))
     }).subscribe({
       next: ({ context, previousContext, transactions }) => {
+        console.log('Dashboard transactions:', transactions);
+
         const currentSnapshot = this.buildMonthlySnapshot(transactions, currentMonth);
         const previousSnapshot = this.buildMonthlySnapshot(transactions, previousMonth);
+
+      console.log('Current month:', currentMonth);
+      console.log('Current snapshot:', currentSnapshot);
+
         if (!context && currentSnapshot.count == 0) {
           this.hasError = true;
           this.isLoading = false;

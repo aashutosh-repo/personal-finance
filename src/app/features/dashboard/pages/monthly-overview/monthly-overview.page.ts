@@ -1,6 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChartConfiguration, Chart, registerables } from 'chart.js';
+import { ChartConfiguration, Chart, registerables, Colors } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { AnalyticsService, BudgetStatus } from '../../../../service/analytics/analytics.service';
 import { AuthService } from '../../../../service/auth/auth.service';
@@ -9,6 +9,9 @@ import { DebtChartComponent } from '../charts/debt-chart/debt-chart.component';
 import { TransactionService } from '../../../../service/tansaction/transaction.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { catchError, forkJoin, of, Subscription } from 'rxjs';
+import { Transaction } from '../../../../../model/transaction.model';
+import { Console } from 'console';
 
 Chart.register(...registerables);
 
@@ -25,7 +28,8 @@ interface CategoryBreakdownItem {
   templateUrl: './monthly-overview.page.html',
   styleUrls: ['./monthly-overview.page.scss']
 })
-export class MonthlyOverviewPage implements OnInit {
+export class MonthlyOverviewPage implements OnInit, OnDestroy {
+  
   private analytics = inject(AnalyticsService);
   private auth = inject(AuthService);
   private transactionService = inject(TransactionService);
@@ -48,6 +52,7 @@ export class MonthlyOverviewPage implements OnInit {
   debtBreakdown: Array<{ label: string; value: number }> = [];
   insightMessages: string[] = [];
   financialHealthFactors: string[] = [];
+  private transactionSyncSubscription?: Subscription;
 
   budgetChartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
@@ -85,8 +90,16 @@ export class MonthlyOverviewPage implements OnInit {
   };
 
   ngOnInit(): void {
+    this.transactionSyncSubscription = this.transactionService.transactionChange$.subscribe(() => {
+      this.loadMonthlyOverview();
+    })
     this.loadMonthlyOverview();
   }
+
+  ngOnDestroy(): void {
+    this.transactionSyncSubscription?.unsubscribe();
+  }
+
 
   changeMonth(offset: number): void {
     const current = this.selectedMonthKey || this.getCurrentMonthKey();
@@ -119,21 +132,31 @@ export class MonthlyOverviewPage implements OnInit {
     const targetMonth = this.selectedMonthKey || this.getCurrentMonthKey();
     this.selectedMonthKey = targetMonth;
 
-    this.analytics.getMonthlyContext(userId, targetMonth).subscribe({
-      next: (ctx) => {
-        const monthValue = ctx.month || targetMonth;
+    forkJoin({
+      context: this.analytics.getMonthlyContext(userId, targetMonth).pipe(catchError(() => of(null))),
+      transactions: this.transactionService.getExpensesByUser(userId).pipe(catchError(() => of([])))
+    }).subscribe ({
+      next: ({ context: ctx, transactions }) => {
+          const transactionSnapShot = this.buildMonthlyTransactionSnapShot(transactions, targetMonth);
+          if(!ctx && transactionSnapShot.count == 0) {
+            this.loadError = true;
+            this.isLoading= false;
+            return;
+          }
+
+        const monthValue = ctx?.month || targetMonth;
         this.monthLabel = this.formatMonthLabel(monthValue);
         this.selectedMonthKey = monthValue;
 
-        this.totalIncome = Number(ctx.totalIncome || 0);
-        this.totalExpense = Number(ctx.totalExpense || 0);
+        this.totalIncome = transactionSnapShot.count > 0 ? transactionSnapShot.totalIncome : Number(ctx?.totalIncome || 0);
+        this.totalExpense = transactionSnapShot.count > 0 ? transactionSnapShot.totalExpense : Number(ctx?.totalExpense || 0);
         this.netSavings = this.totalIncome - this.totalExpense;
         this.savingsRate = this.calculateSavingsRate(this.totalIncome, this.netSavings);
 
         this.incomeData = [this.totalIncome];
         this.expenseData = [this.totalExpense];
 
-        const rawCategories = (ctx.categoryExpenses || []).map((item) => ({
+        const rawCategories = (transactionSnapShot.categories.length ? transactionSnapShot.categories : (ctx?.categoryExpenses || [])).map((item) => ({
           label: item.category || 'Other',
           value: Number(item.amount || 0)
         }));
@@ -147,7 +170,7 @@ export class MonthlyOverviewPage implements OnInit {
           }))
           .sort((a, b) => b.value - a.value);
 
-        this.budgetStatuses = (ctx.budgetStatuses || []).map((item) => ({
+        this.budgetStatuses = (ctx?.budgetStatuses || []).map((item) => ({
           category: item.category || 'Budget',
           budget: Number(item.budget || 0),
           actual: Number(item.actual || 0),
@@ -170,6 +193,46 @@ export class MonthlyOverviewPage implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  buildMonthlyTransactionSnapShot(transactions: Transaction[], monthKey: string): {
+    count: number,
+    totalIncome: number,
+    totalExpense: number,
+    totalDebt: number,
+    categories: Array<{category: string; amount: number}>;
+  } {
+    const categoryTotals = new Map<string, number>();
+    let totalIncome = 0;
+    let totalExpense = 0;
+    let totalDebt = 0;
+    let count= 0;
+    console.log(transactions);
+    (transactions || [])
+    .filter((tx) => (tx.dateOfExpense || '').startsWith(monthKey))
+    .forEach(element => {
+      count++;
+      const amount = Number(element.txnAmount) || 0;
+      const txnType = (element.txnType ?? '').toUpperCase();
+      const category = element.expenseCategory || 'OTHER';
+      const isIncome = (element.txnType || '').toUpperCase() == 'CREDIT'
+      
+      if(isIncome) {
+        totalIncome += amount;
+        return;
+      }
+
+      totalExpense += amount;
+      categoryTotals.set(category, (categoryTotals.get(category) || 0) + amount);
+
+      if(category.toLowerCase() === 'DEBIT') {
+        totalDebt += amount;
+      }
+    });
+
+    return {
+      count, totalIncome, totalExpense, totalDebt, categories: [...categoryTotals.entries()].map(([category, amount]) => ({category, amount}))
+    };
   }
 
   retryLoad(): void {

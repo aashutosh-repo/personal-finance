@@ -1,19 +1,22 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { map, Observable, Subject, tap } from 'rxjs';
 import { Transaction, V2Transaction, V2TransactionListResponse } from '../../../model/transaction.model';
 import { environment } from '../../../environments/environment.prod';
 import { AuthService } from '../auth/auth.service';
 import { response } from 'express';
+import { endianness } from 'os';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TransactionService {
     
-  private baseUrl = environment.apiUrl + '/api/v1/transactions';
+  private baseUrl = environment.apiUrl + '/api/v2/transactions';
   private http = inject(HttpClient);
   private authService = inject(AuthService);
+  private transactionChangeService = new Subject<void>();
+  readonly transactionChange$ = this.transactionChangeService.asObservable();
 
   constructor() {
 
@@ -21,10 +24,13 @@ export class TransactionService {
 
   addExpense(tx: Transaction): Observable<Transaction> {
     const endpoint = this.isIncome(tx) ? `${this.baseUrl}/income` : `${this.baseUrl}/expense`;
+    console.log(this.isIncome(tx) + ' '+ endpoint)
     return this.http.post<V2Transaction>(endpoint, this.toV2CreateRequest(tx), {
         params: this.userParams(tx.userId), 
         withCredentials: true
-        }).pipe(map(transaction => this.toLegacyTransaction(transaction)));
+        }).pipe(map(transaction => this.toLegacyTransaction(transaction)),
+        tap(() => this.notifyTransactionChange())
+      );
   }
 
   getExpensesByUser(userId: string): Observable<Transaction[]> {
@@ -43,13 +49,16 @@ export class TransactionService {
   deleteExpense(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`, {
       params: this.currentUserParams().set('deleteBy', this.authService.getCurrentUser() || 'user'),
-      withCredentials: true});
+      withCredentials: true}).pipe(
+        tap(() => this.notifyTransactionChange()));
   }
 
   updateExpense(id: number, tx: Transaction): Observable<Transaction> {
     return this.http.put<V2Transaction>(`${this.baseUrl}/${id}`, this.toV2UpdateRequest(tx), {
       params: this.userParams(tx.userId),
-      withCredentials: true}).pipe(map(transaction => this.toLegacyTransaction(transaction)));
+      withCredentials: true}).pipe(map(transaction => this.toLegacyTransaction(transaction)),
+      tap(()=> this.notifyTransactionChange())
+    );
   }
 
    calculateTotals(userId: string): Observable<{ totalExpense: number; totalInvestment: number; totalDebt: number }> {
@@ -72,7 +81,8 @@ export class TransactionService {
   }
 
   isIncome(tx: Transaction) : boolean{
-     return (tx.txnType || '').toLowerCase() === 'CREDIT';
+    console.log("Type of transaction: ", tx.txnType)
+    return (tx.txnType || '').toUpperCase() == 'CREDIT';
   }
 
   userParams(userId: string| number) : HttpParams {
@@ -120,12 +130,18 @@ export class TransactionService {
       createdBy: this.authService.getCurrentUser() || String(transaction.userId || 'user')
     };
 
+    console.log(baseRequest)
+
     return this.isIncome(transaction) ? {...baseRequest, type: 'INCOME', incomeSource: category} : 
     {...baseRequest, type: 'EXPENSE', expenseCategory: category};
   }
 
   private toLegacyTransaction(transaction: V2Transaction): Transaction {
-    const type = transaction.type || 'INCOME' ? 'CREDIT' : 'DEBIT';
+    console.log('received Transaction : ', transaction)
+    console.log('init type' , transaction.type)
+    const type = transaction.type === 'INCOME' ? 'CREDIT' : 'DEBIT';    
+ 
+    console.log('Type final ',type)
 
     return {
       id: transaction.id,
@@ -137,6 +153,10 @@ export class TransactionService {
       dateOfExpense: transaction.transactionDate,
       description: transaction.description || ''
     };
+  }
+
+  private notifyTransactionChange() {
+    this.transactionChangeService.next();
   }
 
 

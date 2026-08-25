@@ -101,7 +101,7 @@ export class TransactionListComponent implements OnInit {
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.transactionForm = this.fb.group({
-      txnType: [ExpenseType.SHOPPING, [Validators.required]],
+      txnType: [TransactionType.DEBIT, [Validators.required]],
       expenseCategory: ['', [Validators.required]],
       txnAmount: ['', [Validators.required, Validators.min(0)]],
       dateOfExpense: [new Date().toISOString().split('T')[0], [Validators.required]],
@@ -335,7 +335,7 @@ export class TransactionListComponent implements OnInit {
 
   resetForm() {
     this.transactionForm.reset({
-      txnType: ExpenseType.SHOPPING,
+      txnType: TransactionType.DEBIT,
       dateOfExpense: new Date().toISOString().split('T')[0],
       categoryId: 1
     });

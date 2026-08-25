@@ -47,7 +47,9 @@ export interface V2Transaction {
   incomeSource?: string;
   investmentType?: string;
   paymentMethod?: string;
-  dateOfExpense: string
+  dateOfExpense: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface V2TransactionListResponse {
