@@ -54,6 +54,11 @@ export class SidebarComponent implements OnInit {
         { label: 'Debts', icon: '💳', id: 'debts', route: '/v1/debts' }
       ]
     },
+    { title: 'MARKET INTELLIGENCE', 
+      items: [ 
+        { label: 'Companies', icon: '🏢', id: 'companies', route: '/v1/stocks/companies' }, 
+        { label: 'Stock Analysis', icon: '📈', id: 'stock-analysis', route: '/v1/stocks/analysis' }, 
+        { label: 'Market Sync Jobs', icon: '🔄', id: 'market-sync', route: '/v1/stocks/sync-jobs' } ] },
     {
       title: 'AI',
       items: [
