@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './service/common/layout/layout/layout.component';
 import { AuthGuard } from './guards/auth.guard';
+import { CompanyListComponent } from './features/stocks/companies/company-list/company-list.component';
 
 export const routes: Routes = [
   // PUBLIC ROUTES - No Layout (Login/Register only)
@@ -52,6 +53,38 @@ export const routes: Routes = [
         path: 'monthly-overview',
         loadComponent: () => import('./features/dashboard/pages/monthly-overview/monthly-overview.page').then((m) => m.MonthlyOverviewPage)
       },
+// ==========================================
+// MARKET INTELLIGENCE
+// ==========================================
+
+{
+  path: 'stocks/companies',
+  loadComponent: () =>
+    import('./features/stocks/companies/company-list/company-list.component')
+      .then((m) => m.CompanyListComponent)
+},
+
+{
+  path: 'stocks/analysis',
+  loadComponent: () =>
+    import('./features/stocks/analysis/stock-analysis/stock-analysis.component')
+      .then((m) => m.StockAnalysisComponent)
+},
+
+{
+  path: 'stocks/sync-jobs',
+  loadComponent: () =>
+    import('./features/stocks/sync-jobs/sync-jobs/sync-jobs.component')
+      .then((m) => m.SyncJobsComponent)
+},
+
+{
+  path: 'stock-assistant',
+  loadComponent: () =>
+    import('./features/stocks/assistant/stock-assistant/stock-assistant.component')
+      .then((m) => m.StockAssistantComponent)
+},
+
     ],
   },
 
