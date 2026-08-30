@@ -1,9 +1,370 @@
-<div class="stock-page">
+<div class="analysis-page">
 
-  <h1>Stock Analysis</h1>
+  <!-- Header -->
 
-  <p>
-    Analyze historical stock performance.
-  </p>
+  <div class="page-header">
+
+    <div>
+      <h1>Stock Analysis</h1>
+
+      <p>
+        Analyze historical stock performance and market statistics.
+      </p>
+    </div>
+
+  </div>
+
+
+  <!-- Analysis Parameters -->
+
+  <div class="analysis-card">
+
+    <div class="card-header">
+
+      <div>
+        <h2>Analysis Parameters</h2>
+
+        <p>
+          Select a company and date range.
+        </p>
+      </div>
+
+    </div>
+
+
+    <div class="form-grid">
+
+      <!-- Company -->
+
+      <div class="form-group">
+
+        <label>Company</label>
+
+        <select
+          [(ngModel)]="selectedSymbol"
+          [disabled]="loadingCompanies">
+
+          <option value="">
+            Select company
+          </option>
+
+          <option
+            *ngFor="let company of companies"
+            [value]="company.symbol">
+
+            {{ company.symbol }} - {{ company.name }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- From Date -->
+
+      <div class="form-group">
+
+        <label>From Date</label>
+
+        <input
+          type="date"
+          [(ngModel)]="fromDate">
+
+      </div>
+
+
+      <!-- To Date -->
+
+      <div class="form-group">
+
+        <label>To Date</label>
+
+        <input
+          type="date"
+          [(ngModel)]="toDate">
+
+      </div>
+
+    </div>
+
+
+    <!-- Error -->
+
+    <div
+      *ngIf="errorMessage"
+      class="error-message">
+
+      {{ errorMessage }}
+
+    </div>
+
+
+    <!-- Button -->
+
+    <div class="action-section">
+
+      <button
+        type="button"
+        class="primary-button"
+        (click)="analyzeStock()"
+        [disabled]="loadingAnalysis">
+
+        {{
+          loadingAnalysis
+            ? 'Analyzing...'
+            : 'Analyze Stock'
+        }}
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- Loading -->
+
+  <div
+    *ngIf="loadingAnalysis"
+    class="loading-state">
+
+    Analyzing stock data...
+
+  </div>
+
+
+  <!-- Results -->
+
+  <div
+    *ngIf="statistics && !loadingAnalysis"
+    class="results-section">
+
+
+    <!-- Company Summary -->
+
+    <div class="company-summary">
+
+      <div>
+
+        <span class="symbol-title">
+          {{ selectedSymbol }}
+        </span>
+
+        <h2>
+          {{ getSelectedCompany()?.name }}
+        </h2>
+
+        <p>
+          {{ fromDate }} to {{ toDate }}
+        </p>
+
+      </div>
+
+
+      <div
+        class="performance-badge"
+        [ngClass]="getPerformanceClass()">
+
+        {{ statistics.percentageChange | number:'1.2-2' }}%
+
+      </div>
+
+    </div>
+
+
+    <!-- Statistics -->
+
+    <div class="statistics-grid">
+
+      <div class="stat-card">
+
+        <span class="stat-label">
+          Start Price
+        </span>
+
+        <span class="stat-value">
+          ₹ {{ statistics.startPrice | number:'1.2-2' }}
+        </span>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span class="stat-label">
+          End Price
+        </span>
+
+        <span class="stat-value">
+          ₹ {{ statistics.endPrice | number:'1.2-2' }}
+        </span>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span class="stat-label">
+          Highest Price
+        </span>
+
+        <span class="stat-value">
+          ₹ {{ statistics.highestPrice | number:'1.2-2' }}
+        </span>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span class="stat-label">
+          Lowest Price
+        </span>
+
+        <span class="stat-value">
+          ₹ {{ statistics.lowestPrice | number:'1.2-2' }}
+        </span>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span class="stat-label">
+          Average Price
+        </span>
+
+        <span class="stat-value">
+          ₹ {{ statistics.averagePrice | number:'1.2-2' }}
+        </span>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span class="stat-label">
+          Price Change
+        </span>
+
+        <span
+          class="stat-value"
+          [ngClass]="getPerformanceClass()">
+
+          ₹ {{ statistics.priceChange | number:'1.2-2' }}
+
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <!-- Historical Prices -->
+
+    <div class="price-card">
+
+      <div class="price-card-header">
+
+        <div>
+          <h2>Historical Prices</h2>
+
+          <p>
+            {{ prices.length }} records found
+          </p>
+        </div>
+
+      </div>
+
+
+      <div
+        *ngIf="prices.length === 0"
+        class="empty-price-state">
+
+        No price records found for the selected period.
+
+      </div>
+
+
+      <div
+        *ngIf="prices.length > 0"
+        class="price-table-wrapper">
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Date</th>
+              <th>Open</th>
+              <th>High</th>
+              <th>Low</th>
+              <th>Close</th>
+              <th>Volume</th>
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            <tr *ngFor="let price of prices">
+
+              <td>
+                {{ price.priceDate }}
+              </td>
+
+              <td>
+                ₹ {{ price.open | number:'1.2-2' }}
+              </td>
+
+              <td>
+                ₹ {{ price.high | number:'1.2-2' }}
+              </td>
+
+              <td>
+                ₹ {{ price.low | number:'1.2-2' }}
+              </td>
+
+              <td class="close-price">
+                ₹ {{ price.close | number:'1.2-2' }}
+              </td>
+
+              <td>
+                {{ price.volume | number }}
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- Initial Placeholder -->
+
+  <div
+    *ngIf="!statistics && !loadingAnalysis && !errorMessage"
+    class="analysis-placeholder">
+
+    <div class="placeholder-icon">
+      📈
+    </div>
+
+    <h3>Ready to Analyze</h3>
+
+    <p>
+      Select a company and date range to analyze
+      historical stock performance.
+    </p>
+
+  </div>
 
 </div>
