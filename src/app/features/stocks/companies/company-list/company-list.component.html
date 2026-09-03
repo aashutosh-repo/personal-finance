@@ -1,235 +1,47 @@
-<div class="company-page">
-
-  <div class="page-header">
-    <div>
-      <h1>Companies</h1>
-      <p>Manage companies available for market analysis.</p>
+<section class="company-page">
+  <header class="page-header">
+    <div><p class="eyebrow">MARKET INTELLIGENCE</p><h1>Companies</h1><p>Discover the companies available for stock analysis.</p></div>
+    <button type="button" class="primary-button" (click)="openAddCompanyModal()">+ Add Company</button>
+  </header>
+  <section class="toolbar panel">
+    <div class="search-box"><span aria-hidden="true">⌕</span><input type="search" placeholder="Search symbol, company, exchange, sector..." [(ngModel)]="searchTerm" (input)="filterCompanies()" aria-label="Search companies"></div>
+    <div class="filter-row">
+      <select [(ngModel)]="selectedExchange" (ngModelChange)="filterCompanies()" aria-label="Filter by exchange"><option value="">All exchanges</option><option *ngFor="let exchange of exchanges" [value]="exchange">{{ exchange }}</option></select>
+      <select [(ngModel)]="selectedSector" (ngModelChange)="filterCompanies()" aria-label="Filter by sector"><option value="">All sectors</option><option *ngFor="let sector of sectors" [value]="sector">{{ sector }}</option></select>
+      <select [(ngModel)]="selectedIndustry" (ngModelChange)="filterCompanies()" aria-label="Filter by industry"><option value="">All industries</option><option *ngFor="let industry of industries" [value]="industry">{{ industry }}</option></select>
+      <button *ngIf="searchTerm || selectedExchange || selectedSector || selectedIndustry" type="button" class="text-button" (click)="clearFilters()">Clear</button>
     </div>
-
-    <button
-      type="button"
-      class="primary-button"
-      (click)="openAddCompanyModal()">
-      + Add Company
-    </button>
+    <span class="company-count">{{ filteredCompanies.length }} of {{ companies.length }} {{ companies.length === 1 ? 'company' : 'companies' }}</span>
+  </section>
+  <div *ngIf="loading" class="state-message panel" role="status">Loading companies...</div>
+  <div *ngIf="!loading && errorMessage" class="error-message panel" role="alert"><span>{{ errorMessage }}</span><button type="button" (click)="loadCompanies()">Retry</button></div>
+  <section *ngIf="!loading && !errorMessage && !hasCompanies" class="empty-state panel"><div class="empty-icon">＋</div><h2>No companies available</h2><p>Add your first company to start stock analysis.</p><button type="button" class="primary-button" (click)="openAddCompanyModal()">+ Add Company</button></section>
+  <section *ngIf="!loading && !errorMessage && hasCompanies && !filteredCompanies.length" class="empty-state panel"><div class="empty-icon">⌕</div><h2>No companies found</h2><p>Try changing your search or filters.</p><button type="button" class="secondary-button" (click)="clearFilters()">Clear filters</button></section>
+  <div *ngIf="!loading && !errorMessage && filteredCompanies.length" class="company-layout">
+    <section class="company-grid" aria-label="Companies">
+      <article *ngFor="let company of filteredCompanies" class="company-card panel" [class.selected]="selectedCompany?.symbol === company.symbol" tabindex="0" (click)="selectCompany(company)" (keydown.enter)="selectCompany(company)">
+        <div class="card-top"><span class="symbol-badge">{{ company.symbol }}</span><span class="exchange-badge">{{ company.exchange || 'Exchange N/A' }}</span></div>
+        <h2>{{ company.name }}</h2><p class="sector">{{ company.sector || 'Sector not provided' }}</p><p class="industry">{{ company.industry || 'Industry not provided' }}</p>
+        <button type="button" class="card-action" (click)="$event.stopPropagation(); analyzeCompany(company)">Analyze stock <span aria-hidden="true">→</span></button>
+      </article>
+    </section>
+    <aside *ngIf="selectedCompany" class="detail-panel panel" aria-label="Selected company details">
+      <div class="detail-heading"><div><span class="eyebrow">SELECTED COMPANY</span><h2>{{ selectedCompany.symbol }}</h2></div><button type="button" class="icon-button" (click)="selectedCompany = null" aria-label="Close company details">×</button></div>
+      <h3>{{ selectedCompany.name }}</h3><span class="exchange-badge">{{ selectedCompany.exchange || 'Exchange not provided' }}</span>
+      <dl><div><dt>Sector</dt><dd>{{ selectedCompany.sector || 'N/A' }}</dd></div><div><dt>Industry</dt><dd>{{ selectedCompany.industry || 'N/A' }}</dd></div></dl>
+      <button type="button" class="primary-button full-button" (click)="analyzeCompany(selectedCompany)">Analyze {{ selectedCompany.symbol }} →</button>
+    </aside>
   </div>
-
-  <div class="content-card">
-
-    <!-- Toolbar -->
-    <div class="table-toolbar">
-      <div class="search-box">
-        <span>⌕</span>
-
-        <input
-          type="text"
-          placeholder="Search by company name, symbol or sector..."
-          [(ngModel)]="searchTerm"
-          (input)="filterCompanies()">
-      </div>
-
-      <span class="company-count">
-        {{ filteredCompanies.length }}
-        {{ filteredCompanies.length === 1 ? 'company' : 'companies' }}
-      </span>
-    </div>
-
-    <!-- Loading -->
-    <div *ngIf="loading" class="state-message">
-      Loading companies...
-    </div>
-
-    <!-- Error -->
-    <div *ngIf="!loading && errorMessage" class="error-message">
-      <span>{{ errorMessage }}</span>
-
-      <button type="button" (click)="loadCompanies()">
-        Retry
-      </button>
-    </div>
-
-    <!-- Empty -->
-    <div
-      *ngIf="!loading && !errorMessage && filteredCompanies.length === 0"
-      class="empty-state">
-
-      <div class="empty-icon">🏢</div>
-
-      <h3>No companies found</h3>
-
-      <p>Add your first company to start analyzing market data.</p>
-
-      <button
-        type="button"
-        class="primary-button"
-        (click)="openAddCompanyModal()">
-        + Add Company
-      </button>
-    </div>
-
-    <!-- Table -->
-    <div
-      *ngIf="!loading && !errorMessage && filteredCompanies.length > 0"
-      class="table-wrapper">
-
-      <table>
-        <thead>
-          <tr>
-            <th>Symbol</th>
-            <th>Company</th>
-            <th>Sector</th>
-            <th>Industry</th>
-            <th>Exchange</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr *ngFor="let company of filteredCompanies">
-
-            <td>
-              <span class="symbol-badge">
-                {{ company.symbol }}
-              </span>
-            </td>
-
-            <td class="company-name">
-              {{ company.name }}
-            </td>
-
-            <td>
-              {{ company.sector || '-' }}
-            </td>
-
-            <td>
-              {{ company.industry || '-' }}
-            </td>
-
-            <td>
-              <span class="exchange-badge">
-                {{ company.exchange || '-' }}
-              </span>
-            </td>
-
-          </tr>
-        </tbody>
-      </table>
-
-    </div>
-
+</section>
+<div *ngIf="showAddModal" class="modal-overlay" (click)="closeAddCompanyModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="add-company-title" (click)="$event.stopPropagation()">
+    <div class="modal-header"><div><p class="eyebrow">COMPANY DIRECTORY</p><h2 id="add-company-title">Add Company</h2><p>Add a company for stock market analysis.</p></div><button type="button" class="icon-button" (click)="closeAddCompanyModal()" [disabled]="creating" aria-label="Close dialog">×</button></div>
+    <form (ngSubmit)="createCompany()"><div class="form-grid">
+      <label>Symbol *<input type="text" name="symbol" placeholder="TCS" maxlength="12" [(ngModel)]="newCompany.symbol" [disabled]="creating" required></label>
+      <label>Company name *<input type="text" name="name" placeholder="Tata Consultancy Services" maxlength="120" [(ngModel)]="newCompany.name" [disabled]="creating" required></label>
+      <label>Exchange<input type="text" name="exchange" placeholder="NSE" [(ngModel)]="newCompany.exchange" [disabled]="creating"></label>
+      <label>Sector<input type="text" name="sector" placeholder="Information Technology" [(ngModel)]="newCompany.sector" [disabled]="creating"></label>
+      <label class="wide-field">Industry<input type="text" name="industry" placeholder="IT Services" [(ngModel)]="newCompany.industry" [disabled]="creating"></label>
+    </div><div *ngIf="createErrorMessage" class="form-error" role="alert">{{ createErrorMessage }}</div><div class="modal-actions"><button type="button" class="secondary-button" (click)="closeAddCompanyModal()" [disabled]="creating">Cancel</button><button type="submit" class="primary-button" [disabled]="creating">{{ creating ? 'Creating...' : 'Create Company' }}</button></div></form>
   </div>
-
-</div>
-
-
-<!-- Add Company Modal -->
-
-<div
-  *ngIf="showAddModal"
-  class="modal-overlay"
-  (click)="closeAddCompanyModal()">
-
-  <div
-    class="modal"
-    (click)="$event.stopPropagation()">
-
-    <div class="modal-header">
-
-      <div>
-        <h2>Add Company</h2>
-        <p>Add a company for stock market analysis.</p>
-      </div>
-
-      <button
-        type="button"
-        class="close-button"
-        (click)="closeAddCompanyModal()">
-        ×
-      </button>
-
-    </div>
-
-    <form (ngSubmit)="createCompany()">
-
-      <div class="form-group">
-        <label>Stock Symbol *</label>
-
-        <input
-          type="text"
-          name="symbol"
-          placeholder="Example: TCS"
-          [(ngModel)]="newCompany.symbol"
-          [disabled]="creating">
-      </div>
-
-      <div class="form-group">
-        <label>Company Name *</label>
-
-        <input
-          type="text"
-          name="name"
-          placeholder="Example: Tata Consultancy Services"
-          [(ngModel)]="newCompany.name"
-          [disabled]="creating">
-      </div>
-
-      <div class="form-group">
-        <label>Sector</label>
-
-        <input
-          type="text"
-          name="sector"
-          placeholder="Example: Information Technology"
-          [(ngModel)]="newCompany.sector"
-          [disabled]="creating">
-      </div>
-
-      <div class="form-group">
-        <label>Industry</label>
-
-        <input
-          type="text"
-          name="industry"
-          placeholder="Example: IT Services"
-          [(ngModel)]="newCompany.industry"
-          [disabled]="creating">
-      </div>
-
-      <div class="form-group">
-        <label>Exchange</label>
-
-        <input
-          type="text"
-          name="exchange"
-          placeholder="Example: NSE"
-          [(ngModel)]="newCompany.exchange"
-          [disabled]="creating">
-      </div>
-
-      <div *ngIf="createErrorMessage" class="form-error">
-        {{ createErrorMessage }}
-      </div>
-
-      <div class="modal-actions">
-
-        <button
-          type="button"
-          class="secondary-button"
-          (click)="closeAddCompanyModal()"
-          [disabled]="creating">
-          Cancel
-        </button>
-
-        <button
-          type="submit"
-          class="primary-button"
-          [disabled]="creating">
-          {{ creating ? 'Adding...' : 'Add Company' }}
-        </button>
-
-      </div>
-
-    </form>
-
-  </div>
-
 </div>

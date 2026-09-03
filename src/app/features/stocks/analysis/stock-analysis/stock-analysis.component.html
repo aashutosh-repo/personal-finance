@@ -1,370 +1,75 @@
-<div class="analysis-page">
+<section class="analysis-page">
+  <header class="page-header">
+    <p class="eyebrow">MARKET INTELLIGENCE</p>
+    <h1>Stock Analysis</h1>
+    <p class="subtitle">Read price history and deterministic market signals in one place.</p>
+  </header>
 
-  <!-- Header -->
-
-  <div class="page-header">
-
-    <div>
-      <h1>Stock Analysis</h1>
-
-      <p>
-        Analyze historical stock performance and market statistics.
-      </p>
+  <form class="search-panel" (ngSubmit)="analyzeStock()">
+    <label for="stock">Search stock</label>
+    <div class="search-row">
+      <input id="stock" name="stock" type="search" list="stock-options" placeholder="TCS or company name" [(ngModel)]="selectedSymbol" [disabled]="loadingCompanies">
+      <datalist id="stock-options">
+        <option *ngFor="let company of companies" [value]="company.symbol">{{ company.name }}</option>
+      </datalist>
+      <input type="date" name="fromDate" [(ngModel)]="fromDate" aria-label="From date">
+      <input type="date" name="toDate" [(ngModel)]="toDate" aria-label="To date">
+      <button type="submit" [disabled]="loadingAnalysis || loadingCompanies">{{ loadingAnalysis ? 'Loading...' : 'Analyze' }}</button>
     </div>
+  </form>
 
+  <div *ngIf="errorMessage" class="alert" role="alert">
+    <span>{{ errorMessage }}</span>
+    <button type="button" (click)="loadCompanies()">Retry</button>
   </div>
+  <div *ngIf="loadingAnalysis" class="loading-panel" role="status">Loading stock information...</div>
 
-
-  <!-- Analysis Parameters -->
-
-  <div class="analysis-card">
-
-    <div class="card-header">
-
+  <ng-container *ngIf="statistics && !loadingAnalysis">
+    <section class="overview panel">
       <div>
-        <h2>Analysis Parameters</h2>
-
-        <p>
-          Select a company and date range.
-        </p>
+        <span class="symbol">{{ selectedSymbol }}</span>
+        <h2>{{ getSelectedCompany()?.name || selectedSymbol }}</h2>
+        <p>{{ statistics.fromDate }} to {{ statistics.toDate }} · {{ prices.length }} records</p>
       </div>
-
-    </div>
-
-
-    <div class="form-grid">
-
-      <!-- Company -->
-
-      <div class="form-group">
-
-        <label>Company</label>
-
-        <select
-          [(ngModel)]="selectedSymbol"
-          [disabled]="loadingCompanies">
-
-          <option value="">
-            Select company
-          </option>
-
-          <option
-            *ngFor="let company of companies"
-            [value]="company.symbol">
-
-            {{ company.symbol }} - {{ company.name }}
-
-          </option>
-
-        </select>
-
+      <div class="headline-value" [ngClass]="getPerformanceClass()">
+        <strong>₹{{ statistics.endPrice | number:'1.2-2' }}</strong>
+        <span>{{ statistics.priceChange >= 0 ? '+' : '' }}{{ statistics.priceChange | number:'1.2-2' }} ({{ statistics.percentageChange | number:'1.2-2' }}%)</span>
       </div>
+    </section>
 
+    <section class="panel chart-panel">
+      <div class="section-heading"><div><p class="eyebrow">PRICE HISTORY</p><h2>Closing price</h2></div><span>{{ statistics.fromDate }} - {{ statistics.toDate }}</span></div>
+      <div *ngIf="prices.length; else noPrices" class="chart-wrap"><canvas baseChart [data]="chartData" [options]="chartOptions" type="line"></canvas></div>
+      <ng-template #noPrices><div class="empty-state">No price records are available for this period.</div></ng-template>
+    </section>
 
-      <!-- From Date -->
+    <section class="metrics-grid">
+      <article class="metric panel"><span>Start price</span><strong>₹{{ statistics.startPrice | number:'1.2-2' }}</strong></article>
+      <article class="metric panel"><span>Highest price</span><strong>₹{{ statistics.highestPrice | number:'1.2-2' }}</strong></article>
+      <article class="metric panel"><span>Lowest price</span><strong>₹{{ statistics.lowestPrice | number:'1.2-2' }}</strong></article>
+      <article class="metric panel"><span>Average price</span><strong>₹{{ statistics.averagePrice | number:'1.2-2' }}</strong></article>
+      <article class="metric panel"><span>Latest volume</span><strong>{{ prices[prices.length - 1].volume | number }}</strong></article>
+      <article class="metric panel"><span>52-week high / low</span><strong>{{ technical?.fiftyTwoWeeksHigh ? ('₹' + (technical?.fiftyTwoWeeksHigh | number:'1.2-2')) : 'N/A' }} / {{ technical?.fiftyTwoWeeksLow ? ('₹' + (technical?.fiftyTwoWeeksLow | number:'1.2-2')) : 'N/A' }}</strong></article>
+    </section>
 
-      <div class="form-group">
-
-        <label>From Date</label>
-
-        <input
-          type="date"
-          [(ngModel)]="fromDate">
-
+    <section class="panel technical-panel" *ngIf="technical">
+      <div class="section-heading"><div><p class="eyebrow">TECHNICAL ANALYSIS</p><h2>Market signals</h2></div><span>{{ technical.recordsUsed }} records used</span></div>
+      <div class="signal-grid">
+        <article *ngFor="let indicator of technical.indicators" class="signal"><span>{{ indicator.indicator }}</span><strong>{{ indicator.value | number:'1.2-2' }}</strong><em [ngClass]="indicator.signal.toLowerCase()">{{ indicator.signal }}</em></article>
       </div>
-
-
-      <!-- To Date -->
-
-      <div class="form-group">
-
-        <label>To Date</label>
-
-        <input
-          type="date"
-          [(ngModel)]="toDate">
-
-      </div>
-
-    </div>
-
-
-    <!-- Error -->
-
-    <div
-      *ngIf="errorMessage"
-      class="error-message">
-
-      {{ errorMessage }}
-
-    </div>
-
-
-    <!-- Button -->
-
-    <div class="action-section">
-
-      <button
-        type="button"
-        class="primary-button"
-        (click)="analyzeStock()"
-        [disabled]="loadingAnalysis">
-
-        {{
-          loadingAnalysis
-            ? 'Analyzing...'
-            : 'Analyze Stock'
-        }}
-
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <!-- Loading -->
-
-  <div
-    *ngIf="loadingAnalysis"
-    class="loading-state">
-
-    Analyzing stock data...
-
-  </div>
-
-
-  <!-- Results -->
-
-  <div
-    *ngIf="statistics && !loadingAnalysis"
-    class="results-section">
-
-
-    <!-- Company Summary -->
-
-    <div class="company-summary">
-
-      <div>
-
-        <span class="symbol-title">
-          {{ selectedSymbol }}
-        </span>
-
-        <h2>
-          {{ getSelectedCompany()?.name }}
-        </h2>
-
-        <p>
-          {{ fromDate }} to {{ toDate }}
-        </p>
-
-      </div>
-
-
-      <div
-        class="performance-badge"
-        [ngClass]="getPerformanceClass()">
-
-        {{ statistics.percentageChange | number:'1.2-2' }}%
-
-      </div>
-
-    </div>
-
-
-    <!-- Statistics -->
-
-    <div class="statistics-grid">
-
-      <div class="stat-card">
-
-        <span class="stat-label">
-          Start Price
-        </span>
-
-        <span class="stat-value">
-          ₹ {{ statistics.startPrice | number:'1.2-2' }}
-        </span>
-
-      </div>
-
-
-      <div class="stat-card">
-
-        <span class="stat-label">
-          End Price
-        </span>
-
-        <span class="stat-value">
-          ₹ {{ statistics.endPrice | number:'1.2-2' }}
-        </span>
-
-      </div>
-
-
-      <div class="stat-card">
-
-        <span class="stat-label">
-          Highest Price
-        </span>
-
-        <span class="stat-value">
-          ₹ {{ statistics.highestPrice | number:'1.2-2' }}
-        </span>
-
-      </div>
-
-
-      <div class="stat-card">
-
-        <span class="stat-label">
-          Lowest Price
-        </span>
-
-        <span class="stat-value">
-          ₹ {{ statistics.lowestPrice | number:'1.2-2' }}
-        </span>
-
-      </div>
-
-
-      <div class="stat-card">
-
-        <span class="stat-label">
-          Average Price
-        </span>
-
-        <span class="stat-value">
-          ₹ {{ statistics.averagePrice | number:'1.2-2' }}
-        </span>
-
-      </div>
-
-
-      <div class="stat-card">
-
-        <span class="stat-label">
-          Price Change
-        </span>
-
-        <span
-          class="stat-value"
-          [ngClass]="getPerformanceClass()">
-
-          ₹ {{ statistics.priceChange | number:'1.2-2' }}
-
-        </span>
-
-      </div>
-
-    </div>
-
-
-    <!-- Historical Prices -->
-
-    <div class="price-card">
-
-      <div class="price-card-header">
-
-        <div>
-          <h2>Historical Prices</h2>
-
-          <p>
-            {{ prices.length }} records found
-          </p>
-        </div>
-
-      </div>
-
-
-      <div
-        *ngIf="prices.length === 0"
-        class="empty-price-state">
-
-        No price records found for the selected period.
-
-      </div>
-
-
-      <div
-        *ngIf="prices.length > 0"
-        class="price-table-wrapper">
-
-        <table>
-
-          <thead>
-
-            <tr>
-              <th>Date</th>
-              <th>Open</th>
-              <th>High</th>
-              <th>Low</th>
-              <th>Close</th>
-              <th>Volume</th>
-            </tr>
-
-          </thead>
-
-
-          <tbody>
-
-            <tr *ngFor="let price of prices">
-
-              <td>
-                {{ price.priceDate }}
-              </td>
-
-              <td>
-                ₹ {{ price.open | number:'1.2-2' }}
-              </td>
-
-              <td>
-                ₹ {{ price.high | number:'1.2-2' }}
-              </td>
-
-              <td>
-                ₹ {{ price.low | number:'1.2-2' }}
-              </td>
-
-              <td class="close-price">
-                ₹ {{ price.close | number:'1.2-2' }}
-              </td>
-
-              <td>
-                {{ price.volume | number }}
-              </td>
-
-            </tr>
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- Initial Placeholder -->
-
-  <div
-    *ngIf="!statistics && !loadingAnalysis && !errorMessage"
-    class="analysis-placeholder">
-
-    <div class="placeholder-icon">
-      📈
-    </div>
-
-    <h3>Ready to Analyze</h3>
-
-    <p>
-      Select a company and date range to analyze
-      historical stock performance.
-    </p>
-
-  </div>
-
-</div>
+    </section>
+
+    <section class="panel ai-panel">
+      <div class="section-heading"><div><p class="eyebrow">AI ASSISTED RESEARCH</p><h2>Stock analysis</h2></div><span class="ai-note">Generated through the existing assistant</span></div>
+      <p class="disclaimer">AI-generated context is informational and may be incomplete. It is not financial advice.</p>
+      <div *ngIf="loadingAi" class="loading-inline" role="status">AI is analyzing the stock...</div>
+      <div *ngIf="aiError && !loadingAi" class="ai-error">AI analysis is temporarily unavailable. Your stock data is still available. <button type="button" (click)="analyzeAi()">Retry AI analysis</button></div>
+      <div *ngIf="aiResponse && !loadingAi" class="ai-response" [innerHTML]="formatAiResponse(aiResponse)"></div>
+      <button *ngIf="!loadingAi && !aiResponse && !aiError" type="button" class="secondary-button" (click)="analyzeAi()">Generate AI analysis</button>
+    </section>
+  </ng-container>
+
+  <section *ngIf="!statistics && !loadingAnalysis && !errorMessage" class="empty-start panel">
+    <span class="empty-mark">↗</span><h2>Start your stock analysis</h2><p>Choose a symbol and date range to view price history, metrics, and technical signals.</p>
+  </section>
+</section>
