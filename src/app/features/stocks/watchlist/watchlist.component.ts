@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SharedMaterialModules } from '../../../service/common/shared-material.module';
 import { WatchlitService } from '../../../service/stocks/watchlist.service';
-import { WatchlistEntry } from '../../../../model/technical-analysis.model';
+import { WatchlistEntry } from '../models/stock.model';
 
 @Component({
   selector: 'app-watchlist',

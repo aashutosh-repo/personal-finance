@@ -1,3 +1,5 @@
+import { inflateRaw } from "zlib";
+
 export interface FundamentalsOverviewResponse {
   symbol: string;
   asOfDate: string; // YYYY-MM-DD
@@ -109,4 +111,45 @@ export interface DcfFromFundamentalsRequest {
   shareOutstanding: number;
 
   projectionYear: number;
+}
+
+export interface StockScore {
+  symbol: string;
+  overallScore: number;
+  fundamentalScore: number;
+  growthScore: number;
+  valuationScore: number;
+  financialHealthScore: number;
+  technicalScore: number;
+  sentimentScore: number;
+  riskScore: number;
+}
+
+export interface AiChatResponse {
+  response: string;
+  tools_used: string[];
+  grounded?: boolean;
+  grounding_issues?: string[];
+  sources?: string[]
+}
+
+export interface AiJobStatusResponse {
+  job_id: string;
+  status: 'queued' | 'running' | 'completed' | 'failed';
+  progress: number;
+  response: string;
+  error?: string;
+  tools_used?: string[]
+  source?: string[];
+  grounded?: boolean;
+  created_At?: string;
+  updated_At?: string;
+}
+
+export interface WatchlistEntry {
+    symbol: string;
+    addedAt: string;
+    targetPrice: number | null;
+    alertOnDrop: number | null;
+    notes?: string
 }

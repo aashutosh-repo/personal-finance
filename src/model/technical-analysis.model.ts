@@ -17,12 +17,3 @@ export interface TechnicalAnalysis {
   fiftyTwoWeeksHigh?: number;
   fiftyTwoWeeksLow?: number;
 }
-
-
-export interface WatchlistEntry {
-    symbol: string;
-    addedAt: string;
-    targetPrice: number | null;
-    alertOnDrop: number | null;
-    notes?: string
-}
