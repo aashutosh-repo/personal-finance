@@ -53,37 +53,58 @@ export const routes: Routes = [
         path: 'monthly-overview',
         loadComponent: () => import('./features/dashboard/pages/monthly-overview/monthly-overview.page').then((m) => m.MonthlyOverviewPage)
       },
-// ==========================================
-// MARKET INTELLIGENCE
-// ==========================================
+    // ==========================================
+    // MARKET INTELLIGENCE
+    // ==========================================
 
-{
-  path: 'stocks/companies',
-  loadComponent: () =>
-    import('./features/stocks/companies/company-list/company-list.component')
-      .then((m) => m.CompanyListComponent)
-},
+    {
+      path: 'stocks/companies',
+      loadComponent: () =>
+        import('./features/stocks/companies/company-list/company-list.component')
+          .then((m) => m.CompanyListComponent)
+    },
 
-{
-  path: 'stocks/analysis',
-  loadComponent: () =>
-    import('./features/stocks/analysis/stock-analysis/stock-analysis.component')
-      .then((m) => m.StockAnalysisComponent)
-},
+    {
+      path: 'stocks/analysis',
+      loadComponent: () =>
+        import('./features/stocks/analysis/stock-analysis/stock-analysis.component')
+          .then((m) => m.StockAnalysisComponent)
+    },
 
-{
-  path: 'stocks/sync-jobs',
-  loadComponent: () =>
-    import('./features/stocks/sync-jobs/sync-jobs/sync-jobs.component')
-      .then((m) => m.SyncJobsComponent)
-},
+    {
+      path: 'stocks/sync-jobs',
+      loadComponent: () =>
+        import('./features/stocks/sync-jobs/sync-jobs/sync-jobs.component')
+          .then((m) => m.SyncJobsComponent)
+    },
 
-{
-  path: 'stock-assistant',
-  loadComponent: () =>
-    import('./features/stocks/assistant/stock-assistant/stock-assistant.component')
-      .then((m) => m.StockAssistantComponent)
-},
+    {
+      path: 'stock-assistant',
+      loadComponent: () =>
+        import('./features/stocks/assistant/stock-assistant/stock-assistant.component')
+          .then((m) => m.StockAssistantComponent)
+    },
+    //stock url
+    {
+      path: 'stocks/watchlist',
+      loadComponent: () => import('./features/stocks/watchlist/watchlist.component').then((m) => m.WatchlistComponent)
+    },
+
+    {
+      path: 'stocks/research',
+      loadComponent: () => import('./features/stocks/ai-research/ai-research.component').then((m) => m.AiResearchComponent)
+    },
+
+    {
+      path: 'stocks/:symbol',
+      loadComponent: () => import('./features/stocks/stock-details/stock-details.component').then((m) => m.StockDetailsComponent)
+    },
+
+    {
+      path: 'stocks',
+      redirectTo: 'stocks/watchlist',
+      pathMatch: 'full'
+    },
 
     ],
   },
