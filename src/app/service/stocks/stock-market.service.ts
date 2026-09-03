@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { MarketPrice } from '../../../model/market-price.model';
 import { StockStatistics } from '../../../model/stock-statistics.model';
+import { TechnicalAnalysis } from '../../../model/technical-analysis.model';
 
 
 
@@ -46,6 +47,15 @@ export class StockMarketService {
 
     return this.http.get<StockStatistics>(
       `${this.apiUrl}/${symbol}/statistics`,
+      { params }
+    );
+  }
+
+  getTechnicalAnalysis(symbol: string, from: string, to: string, period = 14): Observable<TechnicalAnalysis> {
+    const params = new HttpParams().set('from', from).set('to', to).set('period', period);
+    return this.http.post<TechnicalAnalysis>(
+      `http://localhost:8080/api/v1/stocks/${symbol}/technical`,
+      null,
       { params }
     );
   }
