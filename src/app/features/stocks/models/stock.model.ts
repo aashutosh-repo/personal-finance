@@ -133,6 +133,12 @@ export interface AiChatResponse {
   sources?: string[]
 }
 
+export interface AiJobSubmitResponse {
+  job_id: string;
+  status: string;
+  progress: string;
+}
+
 export interface AiJobStatusResponse {
   job_id: string;
   status: 'queued' | 'running' | 'completed' | 'failed';
