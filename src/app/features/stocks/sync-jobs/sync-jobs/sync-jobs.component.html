@@ -1,9 +1,181 @@
-<div class="stock-page">
+<div class="sync-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Market Intelligence</p>
+      <h1>Market Sync</h1>
+    </div>
 
-  <h1>Market Sync Jobs</h1>
+    <button mat-stroked-button type="button" (click)="refreshJobs()">
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </header>
 
-  <p>
-    Monitor historical market data synchronization.
-  </p>
+  <section class="panel sync-panel">
+    <div class="panel-header">
+      <div>
+        <span class="section-eyebrow">Sync Market Data</span>
+        <h2>Historical Price Synchronization</h2>
+      </div>
+    </div>
 
+    <form class="sync-form" (ngSubmit)="syncMarketData()">
+      <mat-form-field appearance="outline">
+        <mat-label>Company</mat-label>
+        <mat-select [(ngModel)]="selectedCompany" name="company" [disabled]="loadingCompanies">
+          <mat-option value="">Select a company</mat-option>
+          @for (company of companies; track company.id) {
+            <mat-option [value]="company.symbol">{{ company.symbol }} - {{ company.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>From Date</mat-label>
+        <input matInput type="date" [(ngModel)]="fromDate" name="fromDate" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>To Date</mat-label>
+        <input matInput type="date" [(ngModel)]="toDate" name="toDate" />
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" type="submit" [disabled]="syncing || loadingCompanies">
+        @if (syncing) {
+          <ng-container>
+            <mat-icon>sync</mat-icon>
+            <span>Syncing...</span>
+          </ng-container>
+        } @else {
+          <ng-container>
+            <mat-icon>sync_alt</mat-icon>
+            <span>Sync Market Data</span>
+          </ng-container>
+        }
+      </button>
+    </form>
+
+    @if (errorMessage) {
+      <div class="error-row">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage }}</span>
+      </div>
+    }
+  </section>
+
+  <section class="panel jobs-panel">
+    <div class="panel-header jobs-header">
+      <div>
+        <span class="section-eyebrow">Recent Sync Jobs</span>
+        <h2>Synchronization Activity</h2>
+      </div>
+    </div>
+
+    <div class="filters-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Symbol</mat-label>
+        <mat-select [(ngModel)]="selectedSymbol" (selectionChange)="pageIndex = 0; loadJobs()">
+          <mat-option value="">All</mat-option>
+          @for (company of companies; track company.id) {
+            <mat-option [value]="company.symbol">{{ company.symbol }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="selectedStatus" (selectionChange)="pageIndex = 0; loadJobs()">
+          @for (status of statuses; track status) {
+            <mat-option [value]="status">{{ status === 'ALL' ? 'All' : status }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    @if (loadingJobs) {
+      <div class="state-block">
+        <mat-spinner diameter="36"></mat-spinner>
+        <span>Loading sync jobs…</span>
+      </div>
+    } @else if (jobs.length === 0) {
+      <div class="state-block empty-state">
+        <mat-icon>playlist_add_check</mat-icon>
+        <span>No sync jobs found.</span>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table mat-table [dataSource]="jobs" class="jobs-table">
+          <ng-container matColumnDef="symbol">
+            <th mat-header-cell *matHeaderCellDef>Symbol</th>
+            <td mat-cell *matCellDef="let row">{{ row.symbol }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="provider">
+            <th mat-header-cell *matHeaderCellDef>Provider</th>
+            <td mat-cell *matCellDef="let row">{{ row.provider || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="fromDate">
+            <th mat-header-cell *matHeaderCellDef>From Date</th>
+            <td mat-cell *matCellDef="let row">{{ row.fromDate || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="toDate">
+            <th mat-header-cell *matHeaderCellDef>To Date</th>
+            <td mat-cell *matCellDef="let row">{{ row.toDate || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="status-badge" [ngClass]="getStatusClass(row.status)">{{ getStatusText(row.status) }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="recordsProcessed">
+            <th mat-header-cell *matHeaderCellDef>Processed</th>
+            <td mat-cell *matCellDef="let row">{{ row.totalRecords ?? 0 }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="inserted">
+            <th mat-header-cell *matHeaderCellDef>Inserted</th>
+            <td mat-cell *matCellDef="let row">{{ row.insertedRecords ?? 0 }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="updated">
+            <th mat-header-cell *matHeaderCellDef>Updated</th>
+            <td mat-cell *matCellDef="let row">{{ row.updatedRecords ?? 0 }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="startedAt">
+            <th mat-header-cell *matHeaderCellDef>Started</th>
+            <td mat-cell *matCellDef="let row">{{ row.startedAt ? (row.startedAt | date:'short') : '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="completedAt">
+            <th mat-header-cell *matHeaderCellDef>Completed</th>
+            <td mat-cell *matCellDef="let row">{{ row.completedAt ? (row.completedAt | date:'short') : '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let row">
+              <button mat-stroked-button type="button" (click)="viewJobDetails(row)">View Details</button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+
+      <mat-paginator
+        [length]="totalElements"
+        [pageIndex]="pageIndex"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)">
+      </mat-paginator>
+    }
+  </section>
 </div>
