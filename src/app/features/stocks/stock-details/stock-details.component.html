@@ -1,1 +1,1008 @@
-<p>stock-details works!</p>
+<div class="stock-page"> <!-- ================= HEADER ================= -->
+    <header class="page-header">
+        <div class="header-left">
+            <button mat-icon-button class="back-btn" routerLink="/v1/stocks">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+
+            <div class="stock-title">
+                <div class="symbol-row">
+                    <h1>{{ symbol() || 'Stock' }}</h1>
+
+                    <span class="watchlist-badge" [class.active]="IsInWatchList()">
+                        <mat-icon>
+                            {{ IsInWatchList() ? 'star' : 'star_border' }}
+                        </mat-icon>
+                        {{ IsInWatchList() ? 'Watching' : 'Not watching' }}
+                    </span>
+                </div>
+
+                <p>
+                    Equity research dashboard
+                    @if (fundamentals()?.asOfDate) {
+                    <span>• Data as of {{ fundamentals()?.asOfDate }}</span>
+                    }
+                </p>
+            </div>
+        </div>
+
+        <div class="header-actions">
+
+            <button mat-stroked-button class="research-btn" (click)="goToResearch()">
+                <mat-icon>psychology</mat-icon>
+                AI Research
+            </button>
+
+            <button mat-flat-button class="watch-btn" [class.remove]="IsInWatchList()" (click)="toggleWatchList()">
+
+                <mat-icon>
+                    {{ IsInWatchList() ? 'star' : 'star_border' }}
+                </mat-icon>
+
+                {{ IsInWatchList() ? 'Remove Watchlist' : 'Add Watchlist' }}
+            </button>
+        </div>
+    </header> <!-- ================= LOADING ================= -->
+    @if (loadingFundamentals() || loadingTechnical()) {
+    <div class="global-progress">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </div>
+    }
+
+    <!-- ================= OVERVIEW ================= -->
+    @if (fundamentals(); as f) {
+    <section class="overview-grid">
+
+        <!-- Revenue -->
+        <div class="metric-card">
+            <div class="metric-icon blue">
+                <mat-icon>payments</mat-icon>
+            </div>
+
+            <div class="metric-content">
+                <span class="metric-label">Latest Revenue</span>
+
+                <strong>
+                    {{ f.latestRevenue !== null
+                    ? (f.latestRevenue | number:'1.0-0')
+                    : '—' }}
+                </strong>
+
+                @if (f.revenueGrowthRateYoY !== null) {
+                <span class="metric-change" [class.negative]="f.revenueGrowthRateYoY < 0">
+
+                    <mat-icon>
+                        {{ f.revenueGrowthRateYoY >= 0
+                        ? 'trending_up'
+                        : 'trending_down' }}
+                    </mat-icon>
+
+                    {{ f.revenueGrowthRateYoY * 100 | number:'1.1-1' }}% YoY
+                </span>
+                }
+            </div>
+        </div>
+
+
+        <!-- EBIT -->
+        <div class="metric-card">
+            <div class="metric-icon purple">
+                <mat-icon>analytics</mat-icon>
+            </div>
+
+            <div class="metric-content">
+                <span class="metric-label">EBIT Margin</span>
+
+                <strong>
+                    {{ f.ebitMargin !== null
+                    ? (f.ebitMargin * 100 | number:'1.1-1') + '%'
+                    : '—' }}
+                </strong>
+
+                <span class="metric-sub">
+                    EBIT
+                    {{ f.latestEbit !== null
+                    ? (f.latestEbit | number:'1.0-0')
+                    : '—' }}
+                </span>
+            </div>
+        </div>
+
+
+        <!-- FCF -->
+        <div class="metric-card">
+            <div class="metric-icon green">
+                <mat-icon>account_balance_wallet</mat-icon>
+            </div>
+
+            <div class="metric-content">
+                <span class="metric-label">Free Cash Flow</span>
+
+                <strong>
+                    {{ f.freeCashFlow !== null
+                    ? (f.freeCashFlow | number:'1.0-0')
+                    : '—' }}
+                </strong>
+
+                <span class="metric-sub">
+                    Margin:
+                    {{ f.fcfMargin !== null
+                    ? (f.fcfMargin * 100 | number:'1.1-1') + '%'
+                    : '—' }}
+                </span>
+            </div>
+        </div>
+
+
+        <!-- ROE -->
+        <div class="metric-card">
+            <div class="metric-icon orange">
+                <mat-icon>percent</mat-icon>
+            </div>
+
+            <div class="metric-content">
+                <span class="metric-label">ROE</span>
+
+                <strong>
+                    {{ f.roe !== null
+                    ? (f.roe * 100 | number:'1.1-1') + '%'
+                    : '—' }}
+                </strong>
+
+                <span class="metric-sub">
+                    ROA:
+                    {{ f.roa !== null
+                    ? (f.roa * 100 | number:'1.1-1') + '%'
+                    : '—' }}
+                </span>
+            </div>
+        </div>
+
+    </section>
+    }
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="dashboard-grid">
+        <!-- ================= LEFT COLUMN ================= -->
+        <div class="main-column">
+
+
+            <!-- ================= FUNDAMENTALS ================= -->
+            <section class="panel fundamentals-panel">
+
+                <div class="panel-header">
+                    <div>
+                        <span class="section-eyebrow">Fundamentals</span>
+                        <h2>Financial Overview</h2>
+                    </div>
+
+                    @if (fundamentals()?.yearOfData) {
+                    <span class="data-badge">
+                        FY {{ fundamentals()?.yearOfData }}
+                    </span>
+                    }
+                </div>
+
+
+                @if (loadingFundamentals()) {
+
+                <div class="panel-loader">
+                    <mat-spinner diameter="38"></mat-spinner>
+                    <span>Loading fundamentals...</span>
+                </div>
+
+                } @else if (errorFundamentals()) {
+
+                <div class="error-state">
+                    <mat-icon>error_outline</mat-icon>
+                    <span>{{ errorFundamentals() }}</span>
+
+                    <button mat-stroked-button (click)="loadFundamentals(symbol())">
+                        Retry
+                    </button>
+                </div>
+
+                } @else {
+                @if (fundamentals(); as f) {
+
+                <div class="fundamental-grid">
+
+                    <div class="fundamental-item">
+                        <span>Revenue CAGR</span>
+                        <strong>
+                            {{ f.revenueCAGR !== null
+                            ? (f.revenueCAGR * 100 | number:'1.1-1') + '%'
+                            : '—' }}
+                        </strong>
+                    </div>
+
+                    <div class="fundamental-item">
+                        <span>Net Income</span>
+                        <strong>
+                            {{ f.latestNetIncome !== null
+                            ? (f.latestNetIncome | number:'1.0-0')
+                            : '—' }}
+                        </strong>
+                    </div>
+
+                    <div class="fundamental-item">
+                        <span>Net Margin</span>
+                        <strong>
+                            {{ f.netMargin !== null
+                            ? (f.netMargin * 100 | number:'1.1-1') + '%'
+                            : '—' }}
+                        </strong>
+                    </div>
+
+                    <div class="fundamental-item">
+                        <span>Operating Cash Flow</span>
+                        <strong>
+                            {{ f.latestOperatingCashFlow !== null
+                            ? (f.latestOperatingCashFlow | number:'1.0-0')
+                            : '—' }}
+                        </strong>
+                    </div>
+
+                    <div class="fundamental-item">
+                        <span>Total Debt</span>
+                        <strong>
+                            {{ f.totalDebt !== null
+                            ? (f.totalDebt | number:'1.0-0')
+                            : '—' }}
+                        </strong>
+                    </div>
+
+                    <div class="fundamental-item">
+                        <span>Total Equity</span>
+                        <strong>
+                            {{ f.totalEquity !== null
+                            ? (f.totalEquity | number:'1.0-0')
+                            : '—' }}
+                        </strong>
+                    </div>
+
+                    <div class="fundamental-item">
+                        <span>Debt / Equity</span>
+                        <strong>
+                            {{ f.debtToEquityRatio !== null
+                            ? (f.debtToEquityRatio | number:'1.2-2')
+                            : '—' }}
+                        </strong>
+                    </div>
+
+                    <div class="fundamental-item">
+                        <span>Current Ratio</span>
+                        <strong>
+                            {{ f.currentRatio !== null
+                            ? (f.currentRatio | number:'1.2-2')
+                            : '—' }}
+                        </strong>
+                    </div>
+
+                </div>
+                }
+                }
+
+            </section>
+
+
+            <!-- ================= HISTORICAL FINANCIALS ================= -->
+            <section class="panel">
+
+                <div class="panel-header">
+                    <div>
+                        <span class="section-eyebrow">Financial History</span>
+                        <h2>Historical Statements</h2>
+                    </div>
+
+                    @if (fundamentals()?.historicalStatement?.length) {
+                    <span class="count-badge">
+                        {{ fundamentals()?.historicalStatement?.length }} periods
+                    </span>
+                    }
+                </div>
+
+
+                @if (fundamentals()?.historicalStatement?.length) {
+
+                <div class="table-wrapper">
+
+                    <table mat-table [dataSource]="fundamentals()!.historicalStatement" class="financial-table">
+
+                        <ng-container matColumnDef="fiscalYear">
+                            <th mat-header-cell *matHeaderCellDef>Year</th>
+                            <td mat-cell *matCellDef="let row">
+                                {{ row.fiscalYear }}
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="fiscalQuarter">
+                            <th mat-header-cell *matHeaderCellDef>Quarter</th>
+                            <td mat-cell *matCellDef="let row">
+                                Q{{ row.fiscalQuarter }}
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="reportDate">
+                            <th mat-header-cell *matHeaderCellDef>Date</th>
+                            <td mat-cell *matCellDef="let row">
+                                {{ row.reportDate | date:'mediumDate' }}
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="revenue">
+                            <th mat-header-cell *matHeaderCellDef>Revenue</th>
+                            <td mat-cell *matCellDef="let row">
+                                {{ row.revenue !== null
+                                ? (row.revenue | number:'1.0-0')
+                                : '—' }}
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="ebit">
+                            <th mat-header-cell *matHeaderCellDef>EBIT</th>
+                            <td mat-cell *matCellDef="let row">
+                                {{ row.ebit !== null
+                                ? (row.ebit | number:'1.0-0')
+                                : '—' }}
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="netIncome">
+                            <th mat-header-cell *matHeaderCellDef>Net Income</th>
+                            <td mat-cell *matCellDef="let row">
+                                {{ row.netIncome !== null
+                                ? (row.netIncome | number:'1.0-0')
+                                : '—' }}
+                            </td>
+                        </ng-container>
+
+                        <ng-container matColumnDef="freeCashFlow">
+                            <th mat-header-cell *matHeaderCellDef>Free Cash Flow</th>
+                            <td mat-cell *matCellDef="let row">
+                                <span class="value-positive" [class.value-negative]="row.freeCashFlow < 0">
+                                    {{ row.freeCashFlow !== null
+                                    ? (row.freeCashFlow | number:'1.0-0')
+                                    : '—' }}
+                                </span>
+                            </td>
+                        </ng-container>
+
+                        <tr mat-header-row *matHeaderRowDef="historyColumns">
+                        </tr>
+
+                        <tr mat-row *matRowDef="let row; columns: historyColumns">
+                        </tr>
+
+                    </table>
+
+                </div>
+
+                } @else {
+
+                <div class="empty-state">
+                    <mat-icon>table_chart</mat-icon>
+                    <span>No historical financial data available.</span>
+                </div>
+
+                }
+
+            </section>
+
+
+            <!-- ================= TECHNICAL ANALYSIS ================= -->
+            <section class="panel">
+
+                <div class="panel-header">
+                    <div>
+                        <span class="section-eyebrow">Technical Analysis</span>
+                        <h2>Market Signals</h2>
+                    </div>
+
+                    @if (technicals(); as t) {
+                    <span class="data-badge">
+                        {{ t.recordsUsed }} records
+                    </span>
+                    }
+                </div>
+
+
+                @if (loadingTechnical()) {
+
+                <div class="panel-loader">
+                    <mat-spinner diameter="38"></mat-spinner>
+                    <span>Calculating technical indicators...</span>
+                </div>
+
+                } @else if (errorTechnicals()) {
+
+                <div class="error-state">
+                    <mat-icon>error_outline</mat-icon>
+                    <span>{{ errorTechnicals() }}</span>
+
+                    <button mat-stroked-button (click)="loadTechnical(symbol())">
+                        Retry
+                    </button>
+                </div>
+
+                } @else {
+                @if (technicals(); as t) {
+
+                <!-- Technical summary -->
+                <div class="technical-summary">
+
+                    <div class="technical-stat">
+                        <span>52W High</span>
+                        <strong class="positive">
+                            {{ t.fiftyTwoWeeksHigh !== null
+                            ? (t.fiftyTwoWeeksHigh | number:'1.2-2')
+                            : '—' }}
+                        </strong>
+                    </div>
+
+                    <div class="technical-stat">
+                        <span>52W Low</span>
+                        <strong class="negative">
+                            {{ t.fiftyTwoWeeksLow !== null
+                            ? (t.fiftyTwoWeeksLow | number:'1.2-2')
+                            : '—' }}
+                        </strong>
+                    </div>
+
+                    @if (t.macd; as macd) {
+
+                    <div class="technical-stat macd-stat">
+
+                        <span>MACD</span>
+
+                        <strong>
+                            {{ macd.macdLine | number:'1.2-2' }}
+                        </strong>
+
+                        <span class="signal-pill" [class.bullish]="macdSignal() === 'bullish'"
+                            [class.bearish]="macdSignal() === 'bearish'">
+
+                            <mat-icon>
+                                {{
+                                macdSignal() === 'bullish'
+                                ? 'trending_up'
+                                : macdSignal() === 'bearish'
+                                ? 'trending_down'
+                                : 'remove'
+                                }}
+                            </mat-icon>
+
+                            {{ macdSignal() | titlecase }}
+                        </span>
+
+                    </div>
+                    }
+
+                </div>
+
+
+                <!-- MACD detail -->
+                @if (t.macd; as macd) {
+
+                <div class="indicator-card">
+
+                    <div class="indicator-header">
+                        <div>
+                            <span class="indicator-name">MACD</span>
+                            <span class="indicator-description">
+                                Moving Average Convergence Divergence
+                            </span>
+                        </div>
+
+                        <span class="signal-label" [class.bullish]="macdSignal() === 'bullish'"
+                            [class.bearish]="macdSignal() === 'bearish'">
+
+                            {{ macd.signal || (macdSignal() | titlecase) }}
+                        </span>
+                    </div>
+
+                    <div class="macd-values">
+
+                        <div>
+                            <span>MACD Line</span>
+                            <strong>{{ macd.macdLine | number:'1.3-3' }}</strong>
+                        </div>
+
+                        <div>
+                            <span>Signal Line</span>
+                            <strong>{{ macd.signalLine | number:'1.3-3' }}</strong>
+                        </div>
+
+                        <div>
+                            <span>Histogram</span>
+                            <strong [class.positive]="macd.histogram > 0" [class.negative]="macd.histogram < 0">
+
+                                {{ macd.histogram | number:'1.3-3' }}
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+                }
+
+
+                <!-- Bollinger Bands -->
+                @if (t.bollingerBands; as bb) {
+
+                <div class="indicator-card">
+
+                    <div class="indicator-header">
+                        <div>
+                            <span class="indicator-name">
+                                Bollinger Bands
+                            </span>
+
+                            <span class="indicator-description">
+                                Volatility range
+                            </span>
+                        </div>
+
+                        <mat-icon class="indicator-icon">
+                            show_chart
+                        </mat-icon>
+                    </div>
+
+                    <div class="bollinger-visual">
+
+                        <div class="band-line upper">
+                            <span>Upper</span>
+                            <strong>{{ bb.upperBand | number:'1.2-2' }}</strong>
+                        </div>
+
+                        <div class="band-line middle">
+                            <span>Middle</span>
+                            <strong>{{ bb.middleBand | number:'1.2-2' }}</strong>
+                        </div>
+
+                        <div class="band-line lower">
+                            <span>Lower</span>
+                            <strong>{{ bb.lowerBand | number:'1.2-2' }}</strong>
+                        </div>
+
+                    </div>
+
+                </div>
+                }
+
+
+                <!-- Indicators table -->
+                @if (t.indicators.length) {
+
+                <div class="indicator-table">
+
+                    <div class="indicator-table-header">
+                        <span>Indicator</span>
+                        <span>Value</span>
+                        <span>Signal</span>
+                    </div>
+
+                    @for (indicator of t.indicators; track indicator.indicator) {
+
+                    <div class="indicator-table-row">
+
+                        <span class="indicator-title">
+                            {{ indicator.indicator }}
+                        </span>
+
+                        <strong>
+                            {{ indicator.value | number:'1.2-2' }}
+                        </strong>
+
+                        <span class="mini-signal" [class.bullish]="
+                      indicator.signal?.toLowerCase()?.includes('buy') ||
+                      indicator.signal?.toLowerCase()?.includes('bull')
+                    " [class.bearish]="
+                      indicator.signal?.toLowerCase()?.includes('sell') ||
+                      indicator.signal?.toLowerCase()?.includes('bear')
+                    ">
+
+                            {{ indicator.signal || 'Neutral' }}
+
+                        </span>
+
+                    </div>
+                    }
+
+                </div>
+                }
+
+                }
+                }
+
+            </section>
+
+        </div>
+
+
+        <!-- ================= RIGHT COLUMN ================= -->
+        <aside class="side-column">
+
+
+            <!-- ================= SCORE ================= -->
+            <section class="panel score-panel">
+
+                <div class="panel-header">
+                    <div>
+                        <span class="section-eyebrow">Quant Score</span>
+                        <h2>Stock Rating</h2>
+                    </div>
+
+                    <button mat-icon-button matTooltip="Recalculate score" (click)="runScore()"
+                        [disabled]="loadingScore()">
+
+                        <mat-icon>refresh</mat-icon>
+                    </button>
+                </div>
+
+
+                @if (loadingScore()) {
+
+                <div class="panel-loader">
+                    <mat-spinner diameter="38"></mat-spinner>
+                    <span>Calculating score...</span>
+                </div>
+
+                } @else if (errorScore()) {
+
+                <div class="error-state compact">
+                    <mat-icon>error_outline</mat-icon>
+                    <span>{{ errorScore() }}</span>
+                </div>
+
+                } @else {
+                @if (score(); as s) {
+
+                <div class="score-circle" [class.score-high]="s.overallScore >= 70"
+                    [class.score-medium]="s.overallScore >= 50 && s.overallScore < 70"
+                    [class.score-low]="s.overallScore < 50">
+
+                    <div class="score-inner">
+                        <strong>{{ s.overallScore }}</strong>
+                        <span>/ 100</span>
+                    </div>
+
+                </div>
+
+                <div class="score-rating">
+
+                    @if (s.overallScore >= 80) {
+                    <span class="excellent">Excellent</span>
+                    } @else if (s.overallScore >= 65) {
+                    <span class="good">Strong</span>
+                    } @else if (s.overallScore >= 50) {
+                    <span class="average">Neutral</span>
+                    } @else {
+                    <span class="poor">Weak</span>
+                    }
+
+                </div>
+
+
+                <div class="score-breakdown">
+
+                    <div class="score-row">
+                        <span>Fundamental</span>
+                        <strong>{{ s.fundamentalScore }}</strong>
+                        <div class="score-bar">
+                            <span [style.width.%]="s.fundamentalScore"></span>
+                        </div>
+                    </div>
+
+                    <div class="score-row">
+                        <span>Growth</span>
+                        <strong>{{ s.growthScore }}</strong>
+                        <div class="score-bar">
+                            <span [style.width.%]="s.growthScore"></span>
+                        </div>
+                    </div>
+
+                    <div class="score-row">
+                        <span>Valuation</span>
+                        <strong>{{ s.valuationScore }}</strong>
+                        <div class="score-bar">
+                            <span [style.width.%]="s.valuationScore"></span>
+                        </div>
+                    </div>
+
+                    <div class="score-row">
+                        <span>Financial Health</span>
+                        <strong>{{ s.financialHealthScore }}</strong>
+                        <div class="score-bar">
+                            <span [style.width.%]="s.financialHealthScore"></span>
+                        </div>
+                    </div>
+
+                    <div class="score-row">
+                        <span>Technical</span>
+                        <strong>{{ s.technicalScore }}</strong>
+                        <div class="score-bar">
+                            <span [style.width.%]="s.technicalScore"></span>
+                        </div>
+                    </div>
+
+                    <div class="score-row">
+                        <span>Sentiment</span>
+                        <strong>{{ s.sentimentScore }}</strong>
+                        <div class="score-bar">
+                            <span [style.width.%]="s.sentimentScore"></span>
+                        </div>
+                    </div>
+
+                    <div class="score-row">
+                        <span>Risk</span>
+                        <strong>{{ s.riskScore }}</strong>
+                        <div class="score-bar risk">
+                            <span [style.width.%]="s.riskScore"></span>
+                        </div>
+                    </div>
+
+                </div>
+
+                } @else {
+
+                <div class="score-empty">
+
+                    <div class="score-placeholder">
+                        <mat-icon>speed</mat-icon>
+                    </div>
+
+                    <h3>No score calculated</h3>
+
+                    <p>
+                        Run the scoring model to evaluate this stock.
+                    </p>
+
+                    <button mat-flat-button class="primary-btn" (click)="runScore()">
+                        <mat-icon>calculate</mat-icon>
+                        Calculate Score
+                    </button>
+
+                </div>
+
+                }
+                }
+
+            </section>
+
+
+            <!-- ================= DCF ================= -->
+            <section class="panel dcf-panel">
+
+                <div class="panel-header">
+                    <div>
+                        <span class="section-eyebrow">Valuation</span>
+                        <h2>DCF Model</h2>
+                    </div>
+                </div>
+
+
+                <div class="dcf-inputs">
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Revenue Growth</mat-label>
+                        <input matInput type="number" [(ngModel)]="dcfInput.revenueGrowthRateOverride"
+                            placeholder="Auto">
+
+                        <span matTextSuffix>%</span>
+                    </mat-form-field>
+
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>EBIT Margin</mat-label>
+                        <input matInput type="number" [(ngModel)]="dcfInput.ebitMarginOverride" placeholder="Auto">
+
+                        <span matTextSuffix>%</span>
+                    </mat-form-field>
+
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Tax Rate</mat-label>
+                        <input matInput type="number" [(ngModel)]="dcfInput.taxRate">
+
+                        <span matTextSuffix>%</span>
+                    </mat-form-field>
+
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>WACC</mat-label>
+                        <input matInput type="number" [(ngModel)]="dcfInput.wacc">
+
+                        <span matTextSuffix>%</span>
+                    </mat-form-field>
+
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Terminal Growth</mat-label>
+                        <input matInput type="number" [(ngModel)]="dcfInput.terminalGrowthRate">
+
+                        <span matTextSuffix>%</span>
+                    </mat-form-field>
+
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Projection Years</mat-label>
+                        <input matInput type="number" [(ngModel)]="dcfInput.projectionYear">
+                    </mat-form-field>
+
+                </div>
+
+
+                <button mat-flat-button class="calculate-btn" (click)="runDcf()" [disabled]="loadingDcf()">
+
+                    @if (loadingDcf()) {
+                    <ng-container>
+                        <mat-spinner diameter="20"></mat-spinner>
+                        <span>Calculating...</span>
+                    </ng-container>
+                    } @else {
+                    <ng-container>
+                        <mat-icon>calculate</mat-icon>
+                        <span>Calculate DCF</span>
+                    </ng-container>
+                    }
+
+                </button>
+
+
+                @if (errorDcf()) {
+
+                <div class="dcf-error">
+                    <mat-icon>error_outline</mat-icon>
+                    {{ errorDcf() }}
+                </div>
+
+                }
+
+
+                @if (dcf(); as d) {
+
+                <div class="dcf-result">
+
+                    <div class="valuation-highlight">
+
+                        <span>Intrinsic Value / Share</span>
+
+                        <strong>
+                            {{ d.intrinsicValuePerShare | number:'1.2-2' }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="valuation-grid">
+
+                        <div>
+                            <span>Enterprise Value</span>
+                            <strong>
+                                {{ d.enterpriseValue | number:'1.0-0' }}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Projection</span>
+                            <strong>
+                                {{ d.projectedFreeCashFlow.length }} Years
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="fcf-chart">
+
+                        <span class="chart-title">
+                            Projected Free Cash Flow
+                        </span>
+
+                        <div class="bars">
+
+                            @for (
+                            cashFlow of d.projectedFreeCashFlow;
+                            track $index
+                            ) {
+
+                            <div class="bar-item">
+
+                                <div class="bar" [style.height.%]="
+            getFcfBarHeight(
+              cashFlow,
+              d.projectedFreeCashFlow
+            )
+          " [class.negative-bar]="cashFlow < 0" [matTooltip]="
+            'FCF: ' + (cashFlow | number:'1.0-0')
+          ">
+                                </div>
+
+                                <span>Y{{ $index + 1 }}</span>
+
+                            </div>
+                            }
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                }
+
+            </section>
+
+
+            <!-- ================= QUICK INSIGHTS ================= -->
+            <section class="panel insights-panel">
+
+                <div class="panel-header">
+                    <div>
+                        <span class="section-eyebrow">Quick View</span>
+                        <h2>Key Signals</h2>
+                    </div>
+                </div>
+
+                @if (fundamentals(); as f) {
+
+                <div class="insight-list">
+
+                    <div class="insight">
+                        <div class="insight-icon green">
+                            <mat-icon>trending_up</mat-icon>
+                        </div>
+
+                        <div>
+                            <strong>Revenue Growth</strong>
+                            <span>
+                                {{ f.revenueGrowthRateYoY !== null
+                                ? (f.revenueGrowthRateYoY * 100 | number:'1.1-1') + '% YoY'
+                                : 'Unavailable' }}
+                            </span>
+                        </div>
+                    </div>
+
+
+                    <div class="insight">
+                        <div class="insight-icon blue">
+                            <mat-icon>account_balance</mat-icon>
+                        </div>
+
+                        <div>
+                            <strong>Debt / Equity</strong>
+                            <span>
+                                {{ f.debtToEquityRatio !== null
+                                ? (f.debtToEquityRatio | number:'1.2-2')
+                                : 'Unavailable' }}
+                            </span>
+                        </div>
+                    </div>
+
+
+                    <div class="insight">
+                        <div class="insight-icon purple">
+                            <mat-icon>show_chart</mat-icon>
+                        </div>
+
+                        <div>
+                            <strong>MACD Signal</strong>
+                            <span [class.positive]="macdSignal() === 'bullish'"
+                                [class.negative]="macdSignal() === 'bearish'">
+
+                                {{ macdSignal() | titlecase }}
+
+                            </span>
+                        </div>
+                    </div>
+
+                </div>
+
+                }
+
+            </section>
+
+        </aside>
+    </main>
+</div>

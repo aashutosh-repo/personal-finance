@@ -61,12 +61,9 @@ export interface TechnicalAnalysis {
   fromDate: string; // YYYY-MM-DD
   toDate: string; // YYYY-MM-DD
   recordsUsed: number;
-
   indicators: TechnicalIndicator[];
-
   macd: MacdResult | null;
   bollingerBands: BollingerBands | null;
-
   fiftyTwoWeeksHigh: number | null;
   fiftyTwoWeeksLow: number | null;
 }
@@ -136,7 +133,7 @@ export interface AiChatResponse {
 export interface AiJobSubmitResponse {
   job_id: string;
   status: string;
-  progress: string;
+  progress: number;
 }
 
 export interface AiJobStatusResponse {
