@@ -72,6 +72,12 @@ export const routes: Routes = [
     },
 
     {
+      path: 'market-sync',
+      redirectTo: 'stocks/sync-jobs',
+      pathMatch: 'full'
+    },
+
+    {
       path: 'stocks/sync-jobs',
       loadComponent: () =>
         import('./features/stocks/sync-jobs/sync-jobs/sync-jobs.component')

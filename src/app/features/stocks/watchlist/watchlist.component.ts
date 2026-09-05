@@ -12,7 +12,7 @@ import { WatchlistEntry } from '../models/stock.model';
   templateUrl: './watchlist.component.html',
   styleUrls: ['./watchlist.component.scss']
 })
-export class WatchlistComponent implements OnInit{
+export class WatchlistComponent {
 
   private router = inject(Router);
   private watchlistService = inject(WatchlitService);
@@ -62,19 +62,6 @@ export class WatchlistComponent implements OnInit{
   hasActiveAlert(entry : WatchlistEntry): boolean{
     return (entry.targetPrice ?? 0) > 0 || (entry.alertOnDrop ?? 0) > 0;
   }
-
-
-
-
-
-
-
-
-
-  ngOnInit(): void {
-    throw new Error('Method not implemented.');
-  }
-
 
 
 }
