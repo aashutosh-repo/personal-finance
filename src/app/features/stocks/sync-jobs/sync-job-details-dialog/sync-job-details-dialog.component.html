@@ -1,0 +1,76 @@
+<h2 mat-dialog-title>Sync Job Details</h2>
+
+<mat-dialog-content>
+  <div class="detail-grid">
+    <div class="detail-item">
+      <span>Job ID</span>
+      <strong>{{ job.jobId }}</strong>
+    </div>
+
+    <div class="detail-item">
+      <span>Symbol</span>
+      <strong>{{ job.symbol }}</strong>
+    </div>
+
+    <div class="detail-item">
+      <span>Provider</span>
+      <strong>{{ job.provider || '—' }}</strong>
+    </div>
+
+    <div class="detail-item">
+      <span>Status</span>
+      <span class="status-badge" [ngClass]="getStatusClass(job.status)">{{ getStatusText(job.status) }}</span>
+    </div>
+
+    <div class="detail-item">
+      <span>From Date</span>
+      <strong>{{ job.fromDate || '—' }}</strong>
+    </div>
+
+    <div class="detail-item">
+      <span>To Date</span>
+      <strong>{{ job.toDate || '—' }}</strong>
+    </div>
+
+    <div class="detail-item">
+      <span>Total Records</span>
+      <strong>{{ job.totalRecords ?? '—' }}</strong>
+    </div>
+
+    <div class="detail-item">
+      <span>Records Processed</span>
+      <strong>{{ job.totalRecords ?? '—' }}</strong>
+    </div>
+
+    <div class="detail-item">
+      <span>Inserted</span>
+      <strong>{{ job.insertedRecords ?? '—' }}</strong>
+    </div>
+
+    <div class="detail-item">
+      <span>Updated</span>
+      <strong>{{ job.updatedRecords ?? '—' }}</strong>
+    </div>
+
+    <div class="detail-item">
+      <span>Started At</span>
+      <strong>{{ formatDate(job.startedAt) }}</strong>
+    </div>
+
+    <div class="detail-item">
+      <span>Completed At</span>
+      <strong>{{ formatDate(job.completedAt) }}</strong>
+    </div>
+
+    <div class="detail-item full-span">
+      <span>Error Message</span>
+      <strong>{{ job.errorMessage || '—' }}</strong>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button mat-dialog-close>
+    Close
+  </button>
+</mat-dialog-actions>
