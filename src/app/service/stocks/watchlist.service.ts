@@ -1,8 +1,8 @@
 import { Injectable, signal } from "@angular/core";
-import { WatchlistEntry } from "../../../model/technical-analysis.model";
 import path from "path";
 import { throwMatDuplicatedDrawerError } from "@angular/material/sidenav";
 import { CdkTextColumn } from "@angular/cdk/table";
+import { WatchlistEntry } from "../../features/stocks/models/stock.model";
 
 
 

@@ -31,7 +31,7 @@ export class StockMarketService {
 
     return this.http.get<MarketPrice[]>(
       `${this.apiUrl}/${symbol}/prices`,
-      { params }
+      { params, withCredentials: true }
     );
   }
 
@@ -47,7 +47,7 @@ export class StockMarketService {
 
     return this.http.get<StockStatistics>(
       `${this.apiUrl}/${symbol}/statistics`,
-      { params }
+      { params, withCredentials: true }
     );
   }
 
@@ -56,7 +56,7 @@ export class StockMarketService {
     return this.http.post<TechnicalAnalysis>(
       `http://localhost:8080/api/v1/stocks/${symbol}/technical`,
       null,
-      { params }
+      { params, withCredentials: true }
     );
   }
 }

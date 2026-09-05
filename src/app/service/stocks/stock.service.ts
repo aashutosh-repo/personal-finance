@@ -2,8 +2,7 @@ import { HttpClient, HttpParams } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { environment } from "../../../environments/environment.prod";
 import { Observable } from "rxjs";
-import { DcfFromFundamentalsRequest, DcfValuationResponse, FundamentalsOverviewResponse, StockScore } from "../../features/stocks/models/stock.model";
-import { TechnicalAnalysis } from "../../../model/technical-analysis.model";
+import { DcfFromFundamentalsRequest, DcfValuationResponse, FundamentalsOverviewResponse, StockScore, TechnicalAnalysis } from "../../features/stocks/models/stock.model";
 
 
 @Injectable({providedIn: 'root'})
