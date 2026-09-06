@@ -25,6 +25,19 @@
   <div *ngIf="loadingAnalysis" class="loading-panel" role="status">Loading stock information...</div>
 
   <ng-container *ngIf="statistics && !loadingAnalysis">
+    <section *ngIf="quote as currentQuote" class="quote-panel panel">
+      <div>
+        <span class="symbol">{{ currentQuote.symbol }}</span>
+        <h2>{{ currentQuote.companyName }}</h2>
+        <p>{{ currentQuote.exchange || 'Indian equity market' }} · {{ currentQuote.marketStatus }}</p>
+      </div>
+      <div class="quote-value" [ngClass]="currentQuote.change >= 0 ? 'positive' : 'negative'">
+        <strong>₹{{ currentQuote.price | number:'1.2-2' }}</strong>
+        <span>{{ currentQuote.change >= 0 ? '+' : '' }}{{ currentQuote.change | number:'1.2-2' }} ({{ currentQuote.changePercent | number:'1.2-2' }}%)</span>
+        <small><span class="live-dot" [ngClass]="quoteStatus"></span>{{ getQuoteStatusLabel() }} · Updated {{ formatQuoteTime(currentQuote.fetchedAt) }} · {{ currentQuote.source }}</small>
+      </div>
+    </section>
+
     <section class="overview panel">
       <div>
         <span class="symbol">{{ selectedSymbol }}</span>
@@ -54,6 +67,17 @@
 
     <section class="panel technical-panel" *ngIf="technical">
       <div class="section-heading"><div><p class="eyebrow">TECHNICAL ANALYSIS</p><h2>Market signals</h2></div><span>{{ technical.recordsUsed }} records used</span></div>
+      <div class="signal-grid structured-signals">
+        <article class="signal"><span>SMA 20</span><strong>{{ technical.sma20 != null ? ('₹' + (technical.sma20 | number:'1.2-2')) : 'Unavailable' }}</strong></article>
+        <article class="signal"><span>SMA 50</span><strong>{{ technical.sma50 != null ? ('₹' + (technical.sma50 | number:'1.2-2')) : 'Unavailable' }}</strong></article>
+        <article class="signal"><span>SMA 200</span><strong>{{ technical.sma200 != null ? ('₹' + (technical.sma200 | number:'1.2-2')) : 'Unavailable' }}</strong></article>
+        <article class="signal"><span>RSI 14</span><strong>{{ technical.rsi14 != null ? (technical.rsi14 | number:'1.2-2') : 'Unavailable' }}</strong></article>
+        <article class="signal"><span>Volatility</span><strong>{{ technical.volatility != null ? ((technical.volatility | number:'1.2-2') + '%') : 'Unavailable' }}</strong></article>
+        <article class="signal"><span>Volume trend</span><strong>{{ technical.volumeTrend != null ? ((technical.volumeTrend | number:'1.2-2') + '%') : 'Unavailable' }}</strong></article>
+        <article class="signal"><span>52-week high</span><strong>{{ technical.fiftyTwoWeeksHigh != null ? ('₹' + (technical.fiftyTwoWeeksHigh | number:'1.2-2')) : 'Unavailable' }}</strong></article>
+        <article class="signal"><span>52-week low</span><strong>{{ technical.fiftyTwoWeeksLow != null ? ('₹' + (technical.fiftyTwoWeeksLow | number:'1.2-2')) : 'Unavailable' }}</strong></article>
+        <article class="signal"><span>Trend</span><strong>{{ technical.trend || 'Unavailable' }}</strong></article>
+      </div>
       <div class="signal-grid">
         <article *ngFor="let indicator of technical.indicators" class="signal"><span>{{ indicator.indicator }}</span><strong>{{ indicator.value | number:'1.2-2' }}</strong><em [ngClass]="indicator.signal.toLowerCase()">{{ indicator.signal }}</em></article>
       </div>

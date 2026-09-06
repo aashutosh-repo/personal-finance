@@ -20,6 +20,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 // import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -46,5 +47,6 @@ export const SharedMaterialModules = [
   MatNativeDateModule,
   MatTooltipModule,
   MatProgressBarModule,
+  MatButtonToggleModule,
   ReactiveFormsModule
 ];

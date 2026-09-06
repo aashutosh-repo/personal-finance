@@ -1,17 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { forkJoin } from 'rxjs';
+import { EMPTY, forkJoin, Subject, Subscription, timer } from 'rxjs';
+import { catchError, switchMap, takeUntil } from 'rxjs/operators';
 import { Company } from '../../../../../model/company.model';
 import { MarketPrice } from '../../../../../model/market-price.model';
 import { StockStatistics } from '../../../../../model/stock-statistics.model';
 import { TechnicalAnalysis } from '../../../../../model/technical-analysis.model';
 import { StockCompanyService } from '../../../../service/stocks/stock-company.service';
 import { StockMarketService } from '../../../../service/stocks/stock-market.service';
-import { ChatbotService } from '../../../../service/tansaction/chatbot.service';
-import { AuthService } from '../../../../service/auth/auth.service';
+import { AiResearchService } from '../../../../service/stocks/ai-research.service';
+import { MarketQuote } from '../../../../../model/market-quote.model';
 
 Chart.register(...registerables);
 
@@ -22,7 +23,7 @@ Chart.register(...registerables);
   templateUrl: './stock-analysis.component.html',
   styleUrls: ['./stock-analysis.component.scss']
 })
-export class StockAnalysisComponent implements OnInit {
+export class StockAnalysisComponent implements OnInit, OnDestroy {
   companies: Company[] = [];
   selectedSymbol = '';
   fromDate = '';
@@ -30,6 +31,9 @@ export class StockAnalysisComponent implements OnInit {
   prices: MarketPrice[] = [];
   statistics: StockStatistics | null = null;
   technical: TechnicalAnalysis | null = null;
+  quote: MarketQuote | null = null;
+  quoteStatus: 'updating' | 'live' | 'unavailable' = 'updating';
+  quoteRefreshing = false;
   loadingCompanies = false;
   loadingAnalysis = false;
   loadingAi = false;
@@ -53,9 +57,17 @@ export class StockAnalysisComponent implements OnInit {
   constructor(
     private readonly companyService: StockCompanyService,
     private readonly marketService: StockMarketService,
-    private readonly chatbotService: ChatbotService,
-    private readonly authService: AuthService
+    private readonly aiResearchService: AiResearchService
   ) {}
+
+  private readonly destroy$ = new Subject<void>();
+  private quoteSubscription?: Subscription;
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.quoteSubscription?.unsubscribe();
+  }
 
   ngOnInit(): void {
     this.loadCompanies();
@@ -78,6 +90,8 @@ export class StockAnalysisComponent implements OnInit {
     this.statistics = null;
     this.technical = null;
     this.prices = [];
+    this.quote = null;
+    this.quoteSubscription?.unsubscribe();
     this.aiResponse = '';
     this.aiError = false;
 
@@ -96,6 +110,7 @@ export class StockAnalysisComponent implements OnInit {
         this.prices = result.prices;
         this.technical = result.technical;
         this.setChartData();
+        this.startQuotePolling();
         this.loadingAnalysis = false;
       },
       error: () => {
@@ -106,16 +121,14 @@ export class StockAnalysisComponent implements OnInit {
   }
 
   analyzeAi(): void {
-    const userId = this.authService.getCurrentUserID();
-    if (!userId || !this.selectedSymbol) return;
+    if (!this.selectedSymbol) return;
     this.loadingAi = true;
     this.aiError = false;
-    this.chatbotService.sendMessage({
-      userId,
-      message: `Provide a grounded stock analysis for ${this.selectedSymbol} using the historical period ${this.fromDate} to ${this.toDate}. Clearly separate observations, risks, and uncertainty. Do not present this as financial advice.`
-    }).subscribe({
+    this.aiResearchService.chat(
+      `Provide a grounded stock analysis for ${this.selectedSymbol} using the historical period ${this.fromDate} to ${this.toDate}. Clearly separate observations, risks, and uncertainty. Do not present this as financial advice.`
+    ).subscribe({
       next: (response) => {
-        this.aiResponse = response.success && response.data?.response ? response.data.response : '';
+        this.aiResponse = response.response || '';
         this.aiError = !this.aiResponse;
         this.loadingAi = false;
       },
@@ -140,4 +153,41 @@ export class StockAnalysisComponent implements OnInit {
   }
 
   formatAiResponse(response: string): string { return response.replace(/\n/g, '<br>'); }
+
+  private startQuotePolling(): void {
+    this.quoteSubscription?.unsubscribe();
+    this.quoteStatus = 'updating';
+    this.quoteSubscription = timer(0, 30000).pipe(
+      takeUntil(this.destroy$),
+      switchMap(() => {
+        this.quoteRefreshing = true;
+        this.quoteStatus = 'updating';
+        return this.marketService.getCurrentQuote(this.selectedSymbol).pipe(
+          catchError(() => {
+            this.quoteRefreshing = false;
+            this.quoteStatus = 'unavailable';
+            return EMPTY;
+          })
+        );
+      })
+    ).subscribe({
+      next: (quote) => {
+        this.quote = quote;
+        this.quoteRefreshing = false;
+        this.quoteStatus = 'live';
+      }
+    });
+  }
+
+  getQuoteStatusLabel(): string {
+    return this.quoteStatus === 'updating'
+      ? 'Updating'
+      : this.quoteStatus === 'live' ? 'Live' : 'Update unavailable';
+  }
+
+  formatQuoteTime(value: string): string {
+    return new Date(value).toLocaleTimeString('en-IN', {
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
 }
