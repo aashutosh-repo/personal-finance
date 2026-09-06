@@ -1,1 +1,283 @@
-<p>ai-research works!</p>
+<div class="research-page">
+	<header class="research-header">
+		<div class="header-brand">
+			<div class="brand-icon">
+				<mat-icon>auto_awesome</mat-icon>
+			</div>
+			<div class="brand-copy">
+				<h1>AI Research</h1>
+				<p>Financial intelligence powered by AI</p>
+			</div>
+		</div>
+
+		<div class="assistant-badge">
+			<span class="status-dot"></span>
+			<span>Research Assistant</span>
+		</div>
+	</header>
+
+	<main class="research-shell">
+		<mat-card class="research-card input-card">
+			<div class="section-heading">
+				<h2>What would you like to research?</h2>
+				<p>Ask questions about fundamentals, valuation, technicals, risks, competitors, or market trends.</p>
+			</div>
+
+			<div class="input-section">
+				<mat-form-field appearance="outline" class="research-input-field">
+					<textarea
+						matInput
+						[(ngModel)]="question"
+						rows="5"
+						placeholder="Ask a financial research question..."
+					></textarea>
+				</mat-form-field>
+			</div>
+
+			<div class="prompt-list">
+				<p class="prompt-label">Try an example</p>
+				<div class="prompt-actions">
+					@for (prompt of examplePrompt; track prompt) {
+						<button mat-stroked-button class="prompt-chip" type="button" (click)="usePrompt(prompt)">
+							{{ prompt }}
+						</button>
+					}
+				</div>
+			</div>
+
+			<div class="mode-row">
+				<label class="mode-label">Research mode</label>
+				<mat-button-toggle-group class="mode-selector" [(ngModel)]="mode" aria-label="Research mode">
+					<mat-button-toggle value="sync">
+						<span class="toggle-title">⚡ Instant</span>
+						<span class="toggle-subtitle">Get the answer immediately</span>
+					</mat-button-toggle>
+					<mat-button-toggle value="async">
+						<span class="toggle-title">⏳ Background Research</span>
+						<span class="toggle-subtitle">Run deeper research in the background</span>
+					</mat-button-toggle>
+				</mat-button-toggle-group>
+			</div>
+
+			<div class="submit-row">
+				<button
+					mat-flat-button
+					color="primary"
+					class="submit-button"
+					type="button"
+					[disabled]="loading() || !question.trim()"
+					(click)="submit()"
+				>
+					@if (loading()) {
+						<span class="button-content">
+							<mat-spinner diameter="18"></mat-spinner>
+							<span>Researching...</span>
+						</span>
+					} @else {
+						<span class="button-content">
+							<mat-icon>{{ mode === 'async' ? 'rocket_launch' : 'auto_awesome' }}</mat-icon>
+							<span>{{ mode === 'async' ? 'Start Background Research' : 'Start Research' }}</span>
+						</span>
+					}
+				</button>
+
+				@if (response()) {
+					<button mat-stroked-button type="button" class="new-research-button" (click)="resetResult()">
+						New Research
+					</button>
+				}
+			</div>
+		</mat-card>
+
+		@if (mode === 'async' && loading()) {
+			<mat-card class="progress-card">
+				<div class="progress-header">
+					<div class="progress-icon">
+						<mat-icon>sync</mat-icon>
+					</div>
+					<div>
+						<h3>Research in progress</h3>
+					</div>
+				</div>
+
+				<div class="progress-body">
+					<div class="status-line">
+						<span class="status-badge" [ngClass]="jobStatus() || 'queued'">
+							{{ jobStatus() || 'queued' | titlecase }}
+						</span>
+						<span class="progress-percent">{{ jobPregress() }}%</span>
+					</div>
+
+					<mat-progress-bar mode="determinate" [value]="jobPregress()"></mat-progress-bar>
+
+					<div class="job-meta">
+						<span>Job ID: {{ jobId() || 'pending' }}</span>
+					</div>
+
+					<p class="progress-note">The AI is gathering and analysing data...</p>
+				</div>
+			</mat-card>
+		}
+
+		@if (error()) {
+			<mat-card class="error-card">
+				<div class="error-headline">
+					<mat-icon>error</mat-icon>
+					<div>
+						<h3>Research failed</h3>
+						<p>{{ error() }}</p>
+					</div>
+				</div>
+
+				<button mat-stroked-button color="warn" type="button" class="retry-button" (click)="submit()">
+					Retry
+				</button>
+			</mat-card>
+		}
+
+		@if (!response() && !loading() && !error()) {
+			<mat-card class="empty-state">
+				<div class="empty-icon">✨</div>
+				<h3>Start your financial research</h3>
+
+				<p>Ask the AI about:</p>
+
+				<div class="topic-list">
+					<span class="topic-chip">Company fundamentals</span>
+					<span class="topic-chip">DCF valuation</span>
+					<span class="topic-chip">Growth</span>
+					<span class="topic-chip">Financial health</span>
+					<span class="topic-chip">Technical analysis</span>
+					<span class="topic-chip">Risks</span>
+					<span class="topic-chip">Competitive landscape</span>
+					<span class="topic-chip">Market trends</span>
+				</div>
+
+				<p class="empty-help">Enter a question above to begin.</p>
+			</mat-card>
+		}
+
+		@if (response()) {
+			<mat-card class="result-card">
+				<div class="result-header">
+					<div class="result-title-group">
+						<div class="result-icon">
+							<mat-icon>auto_awesome</mat-icon>
+						</div>
+						<h3>AI Research Report</h3>
+					</div>
+
+					<div class="header-badges">
+						@if (grounded() !== null) {
+							<span class="grounding-badge" [class.grounded]="grounded() === true" [class.ungrounded]="grounded() === false">
+								@if (grounded()) {
+									<mat-icon>check_circle</mat-icon>
+									Grounded Research
+								} @else {
+									<mat-icon>warning</mat-icon>
+									Limited Grounding
+								}
+							</span>
+						}
+
+						<span class="header-meta-pill">{{ toolIsUsed()?.length || 0 }} tools used</span>
+						<span class="header-meta-pill">{{ sources()?.length || 0 }} sources</span>
+					</div>
+				</div>
+
+				<div class="research-content">
+					{{ response() }}
+				</div>
+
+				@if (grounded() !== null) {
+					<div class="grounding-card" [class.grounded-card]="grounded() === true" [class.ungrounded-card]="grounded() === false">
+						@if (grounded()) {
+							<mat-icon>verified</mat-icon>
+							<span>The response is supported by retrieved sources.</span>
+						} @else {
+							<mat-icon>warning_amber</mat-icon>
+							<span>Some parts of this response may not be fully supported by sources.</span>
+						}
+					</div>
+				}
+
+				@if (groundingIssue()?.length) {
+					<div class="grounding-issues">
+						<div class="issues-header">
+							<mat-icon>report_problem</mat-icon>
+							<span>Grounding Issues</span>
+						</div>
+
+						<ul class="issue-list">
+							@for (issue of groundingIssue(); track issue) {
+								<li>{{ issue }}</li>
+							}
+						</ul>
+					</div>
+				}
+
+				@if (toolIsUsed()?.length) {
+					<div class="tools-section">
+						<h4>Research Tools Used</h4>
+						<div class="chip-list">
+							@for (tool of toolIsUsed(); track tool) {
+								<span class="tool-chip">
+									<mat-icon>build</mat-icon>
+									{{ tool }}
+								</span>
+							}
+						</div>
+					</div>
+				}
+
+				@if (sources()?.length) {
+					<div class="sources-section">
+						<h4>Sources</h4>
+						<div class="source-list">
+							@for (source of sources(); track source) {
+								<div class="source-item">
+									<mat-icon>link</mat-icon>
+									@if (source.startsWith('http://') || source.startsWith('https://')) {
+										<a [href]="source" target="_blank" rel="noopener noreferrer">{{ source }}</a>
+										<mat-icon class="external-link">open_in_new</mat-icon>
+									} @else {
+										<span>{{ source }}</span>
+									}
+								</div>
+							}
+						</div>
+					</div>
+				}
+
+				<div class="metadata-grid">
+					<div class="meta-item">
+						<span class="meta-label">Research Mode</span>
+						<span class="meta-value">{{ mode === 'async' ? 'Async' : 'Sync' }}</span>
+					</div>
+					<div class="meta-item">
+						<span class="meta-label">Grounded</span>
+						<span class="meta-value">{{ grounded() === true ? 'Yes' : grounded() === false ? 'No' : 'Pending' }}</span>
+					</div>
+					<div class="meta-item">
+						<span class="meta-label">Tools Used</span>
+						<span class="meta-value">{{ toolIsUsed()?.length || 0 }}</span>
+					</div>
+					<div class="meta-item">
+						<span class="meta-label">Sources</span>
+						<span class="meta-value">{{ sources()?.length || 0 }}</span>
+					</div>
+					@if (mode === 'async') {
+						<div class="meta-item">
+							<span class="meta-label">Job ID</span>
+							<span class="meta-value">{{ jobId() || '—' }}</span>
+						</div>
+						<div class="meta-item">
+							<span class="meta-label">Job Status</span>
+							<span class="meta-value">{{ jobStatus() || '—' }}</span>
+						</div>
+					}
+				</div>
+			</mat-card>
+		}
+	</main>
+</div>
