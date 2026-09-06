@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { MarketPrice } from '../../../model/market-price.model';
 import { StockStatistics } from '../../../model/stock-statistics.model';
 import { TechnicalAnalysis } from '../../../model/technical-analysis.model';
+import { MarketQuote } from '../../../model/market-quote.model';
 
 
 
@@ -48,6 +49,13 @@ export class StockMarketService {
     return this.http.get<StockStatistics>(
       `${this.apiUrl}/${symbol}/statistics`,
       { params, withCredentials: true }
+    );
+  }
+
+  getCurrentQuote(symbol: string): Observable<MarketQuote> {
+    return this.http.get<MarketQuote>(
+      `${this.apiUrl}/${symbol}/quote`,
+      { withCredentials: true }
     );
   }
 

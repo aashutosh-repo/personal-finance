@@ -16,4 +16,14 @@ export interface TechnicalAnalysis {
   bollingerBands?: { lowerBand: number; middleBand: number; upperBand: number } | null;
   fiftyTwoWeeksHigh?: number;
   fiftyTwoWeeksLow?: number;
+  currentPrice?: number | null;
+  dailyReturn?: number | null;
+  periodReturn?: number | null;
+  sma20?: number | null;
+  sma50?: number | null;
+  sma200?: number | null;
+  rsi14?: number | null;
+  volatility?: number | null;
+  volumeTrend?: number | null;
+  trend?: string | null;
 }

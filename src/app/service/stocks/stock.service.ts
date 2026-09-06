@@ -8,11 +8,11 @@ import { DcfFromFundamentalsRequest, DcfValuationResponse, FundamentalsOverviewR
 @Injectable({providedIn: 'root'})
 export class StockService {
     private http = inject(HttpClient);
-    private readonly baseUrl= environment.aiApiurl+ '/api/ai';
+    private readonly baseUrl = environment.apiUrl;
 
 
     getFundamentals(symbol: string): Observable<FundamentalsOverviewResponse> {
-        return this.http.get<FundamentalsOverviewResponse>(`${this.baseUrl}/${symbol}/fundamentals`)
+        return this.http.get<FundamentalsOverviewResponse>(`${this.baseUrl}/api/v1/stocks/${symbol}/fundamentals`, { withCredentials: true })
     }
 
     getTechnicalAnalysis(
@@ -22,21 +22,21 @@ export class StockService {
         period: 14
     ): Observable<TechnicalAnalysis> {
         const params = new HttpParams()
-        .set('fromDate', fromDate)
-        .set('toDate', toDate)
+        .set('from', fromDate)
+        .set('to', toDate)
         .set('period', period)
 
-        return this.http.get<TechnicalAnalysis>(`${this.baseUrl}/${symbol}/analysis/technical`, {params})
+        return this.http.get<TechnicalAnalysis>(`${this.baseUrl}/api/v1/stocks/${symbol}/technical`, { params, withCredentials: true })
     }
     
     calculateDcfFromFundamentals(
         symbol: string,
         request : DcfFromFundamentalsRequest
     ): Observable<DcfValuationResponse> {
-        return this.http.post<DcfValuationResponse>(`${this.baseUrl}/${symbol}/valuation/dcf/from-Fundamental`, request);
+        return this.http.post<DcfValuationResponse>(`${this.baseUrl}/api/v1/stocks/${symbol}/valuation/dcf/from-Fundamental`, request, { withCredentials: true });
     }
 
     calculateScore(symbol: string, payload: Partial<StockScore>): Observable<StockScore> {
-        return this.http.post<StockScore>(`${this.baseUrl}/${symbol}/analysis/score`, payload);
+        return this.http.post<StockScore>(`${this.baseUrl}/api/v1/stocks/${symbol}/score`, payload, { withCredentials: true });
     }
 }
