@@ -37,6 +37,7 @@ export class SidebarComponent implements OnInit {
         { label: 'Dashboard', icon: '📊', id: 'Dashboard', route: '/v1/dashboard' },
         { label: 'Transactions', icon: '💳', id: 'transactions', route: '/v1/transactions' },
         { label: 'Income', icon: '📈', id: 'income', route: '/v1/income' },
+        { label: 'Payments', icon: '💸', id: 'payments', route: '/v1/payments' },
         { label: 'Expenses', icon: '🧾', id: 'expenses', route: '/v1/transactions' }
       ]
     },

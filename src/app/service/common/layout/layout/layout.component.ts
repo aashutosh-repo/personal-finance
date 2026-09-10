@@ -27,6 +27,7 @@ export class LayoutComponent {
       'expenses': '/v1/transactions',
       'budgets': '/v1/budgets',
       'income': '/v1/income',
+      'payments': '/v1/payments',
       'chatbot': '/v1/chatbot',
       'investments': '/v1/investments',
       'debts': '/v1/debts',
