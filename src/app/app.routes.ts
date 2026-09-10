@@ -38,6 +38,10 @@ export const routes: Routes = [
         loadComponent: () =>import('./features/transactions/income-list.component').then((m) => m.IncomeListComponent)
       },
       {
+        path: 'payments',
+        loadComponent: () => import('./features/payment/components/payment-page/payment-page.component').then((m) => m.PaymentPageComponent)
+      },
+      {
         path: 'chatbot',
         loadComponent: () =>import('./features/dashboard/components/chatbot/chatbot.component').then((m) => m.ChatbotComponent)
       },
