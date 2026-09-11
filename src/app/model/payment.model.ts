@@ -27,7 +27,7 @@ export interface PaymentRequest {
   orderId: string;
   amount: number;
   currency: string;
-  paymentMethod: PaymentMethod;
+  paymentMethod?: PaymentMethod;
   idempotencyKey: string;
   upiId?: string;
   provider?: PaymentProvider;
