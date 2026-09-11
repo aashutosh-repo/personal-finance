@@ -1,24 +1,28 @@
-<section class="payment-shell" aria-label="Secure payment checkout">
-  <div class="payment-card" *ngIf="paymentState !== 'SUCCESS' && paymentState !== 'FAILED'; else resultState">
+<section class="payment-shell" aria-label="Secure checkout">
+  <div class="payment-card" *ngIf="paymentState !== 'SUCCESS' && paymentState !== 'FAILED' && paymentState !== 'EXPIRED'; else resultState">
     <header class="payment-header">
       <div>
         <p class="eyebrow">Secure Checkout</p>
         <h1>{{ orderSummary.merchant }}</h1>
       </div>
       <div class="secure-chip" aria-label="Secure payment">
-        <span>🔒</span>
-        <span>Secure</span>
+        <span aria-hidden="true">🔒</span>
+        <span>Secure payment</span>
       </div>
     </header>
 
     <div class="content-grid">
-      <div class="summary-panel">
+      <aside class="summary-panel" aria-labelledby="order-summary-title">
         <div class="summary-header">
-          <h2>Order Summary</h2>
+          <p class="section-kicker">Your order</p>
+          <h2 id="order-summary-title">Order Summary</h2>
         </div>
 
-        <div class="summary-row">
-          <span>{{ orderSummary.product }}</span>
+        <div class="product-row">
+          <div>
+            <strong>{{ orderSummary.product }}</strong>
+            <span>Premium access</span>
+          </div>
           <strong>{{ orderSummary.currency }}{{ orderSummary.subtotal.toFixed(2) }}</strong>
         </div>
         <div class="summary-row muted">
@@ -32,128 +36,61 @@
           <span>Total</span>
           <strong>{{ orderSummary.currency }}{{ orderSummary.total.toFixed(2) }}</strong>
         </div>
-      </div>
+
+        <div class="order-meta">
+          <span>Order ID</span>
+          <strong>{{ orderSummary.orderId }}</strong>
+        </div>
+
+        <div class="trust-list" aria-label="Checkout assurances">
+          <div><span aria-hidden="true">✓</span> Secure checkout</div>
+          <div><span aria-hidden="true">✓</span> Instant confirmation</div>
+          <div><span aria-hidden="true">✓</span> Multiple payment options</div>
+        </div>
+      </aside>
 
       <form class="payment-form" [formGroup]="paymentForm" (ngSubmit)="submitPayment()" novalidate>
         <div class="section-head">
-          <h2>Payment Method</h2>
+          <p class="section-kicker">Complete your purchase</p>
+          <h2>Payment</h2>
+          <p class="section-description">Secure payment powered by {{ selectedProviderName }}.</p>
         </div>
 
-        <div class="field-group provider-field" *ngIf="availableProviders.length > 0">
-          <label for="paymentProvider">Provider</label>
-          <select id="paymentProvider" [value]="selectedProvider" (change)="onProviderChange($any($event.target).value)">
-            <option *ngFor="let provider of availableProviders" [value]="provider.provider">{{ provider.displayName }}</option>
-          </select>
-        </div>
-        <small class="provider-note" *ngIf="availableProviders.length > 0">Checkout powered by {{ selectedProviderName }}</small>
-
-        <div class="payment-options" role="radiogroup" aria-label="Payment methods">
-          <label class="method-option" *ngFor="let option of supportedPaymentMethodOptions">
-            <input
-              type="radio"
-              name="paymentMethod"
-              [value]="option.value"
-              [checked]="selectedPaymentMethod === option.value"
-              (change)="onPaymentMethodChange(option.value)"
-            />
-            <span>{{ option.label }}</span>
-          </label>
-        </div>
-
-        <div class="field-group" *ngIf="selectedPaymentMethod === 'CARD'">
-          <label for="cardNumber">Card Number</label>
-          <input id="cardNumber" type="text" inputmode="numeric" autocomplete="cc-number" maxlength="19" placeholder="XXXX XXXX XXXX XXXX" formControlName="cardNumber" (input)="formatCardNumber($event)" />
-          <small class="field-error" *ngIf="paymentForm.get('cardNumber')?.touched && paymentForm.get('cardNumber')?.hasError('required')">Card number is required.</small>
-          <small class="field-error" *ngIf="paymentForm.get('cardNumber')?.touched && paymentForm.get('cardNumber')?.hasError('pattern')">Enter a valid 16-digit card number.</small>
-        </div>
-
-        <div class="field-group" *ngIf="selectedPaymentMethod === 'UPI'">
-          <label for="upiId">UPI ID</label>
-          <input id="upiId" type="text" placeholder="name@upi" formControlName="upiId" />
-          <small class="field-error" *ngIf="paymentForm.get('upiId')?.touched && paymentForm.get('upiId')?.hasError('required')">UPI ID is required.</small>
-          <small class="field-error" *ngIf="paymentForm.get('upiId')?.touched && paymentForm.get('upiId')?.hasError('pattern')">Enter a valid UPI ID.</small>
-        </div>
-
-        <div class="field-group" *ngIf="selectedPaymentMethod === 'NET_BANKING'">
-          <label for="bankName">Bank Name</label>
-          <input id="bankName" type="text" formControlName="bankName" placeholder="Bank name" />
-        </div>
-
-        <div class="field-group" *ngIf="selectedPaymentMethod === 'NET_BANKING'">
-          <label for="accountNumber">Account Number</label>
-          <input id="accountNumber" type="text" formControlName="accountNumber" placeholder="Account number" />
-        </div>
-
-        <div class="field-group" *ngIf="selectedPaymentMethod === 'WALLET'">
-          <label for="walletType">Wallet</label>
-          <input id="walletType" type="text" formControlName="walletType" placeholder="Paytm / GPay / PhonePe" />
-        </div>
-
-        <div class="field-group" *ngIf="selectedPaymentMethod === 'WALLET'">
-          <label for="walletNumber">Wallet Number</label>
-          <input id="walletNumber" type="text" formControlName="walletNumber" placeholder="Wallet number" />
-        </div>
-
-        <div class="upi-actions" *ngIf="selectedPaymentMethod === 'UPI'">
-          <button type="button" class="verify-button" [disabled]="paymentState === 'VERIFYING_UPI' || paymentForm.get('upiId')?.invalid" (click)="verifyUpiId()">
-            {{ paymentState === 'VERIFYING_UPI' ? 'Verifying...' : 'Verify UPI ID' }}
-          </button>
-          <span class="verified-chip" *ngIf="paymentState === 'UPI_VERIFIED'">Verified</span>
-        </div>
-
-        <div class="row-fields" *ngIf="selectedPaymentMethod === 'CARD'">
-          <div class="field-group compact">
-            <label for="expiry">Expiry</label>
-            <input id="expiry" type="text" maxlength="5" placeholder="MM/YY" formControlName="expiry" />
-            <small class="field-error" *ngIf="paymentForm.get('expiry')?.touched && paymentForm.get('expiry')?.hasError('required')">Expiry is required.</small>
-            <small class="field-error" *ngIf="paymentForm.get('expiry')?.touched && paymentForm.get('expiry')?.hasError('invalidExpiry')">Enter a valid expiry date.</small>
-          </div>
-
-          <div class="field-group compact">
-            <label for="cvv">CVV</label>
-            <input id="cvv" type="password" inputmode="numeric" maxlength="4" placeholder="***" formControlName="cvv" />
-            <small class="field-error" *ngIf="paymentForm.get('cvv')?.touched && paymentForm.get('cvv')?.hasError('required')">CVV is required.</small>
-            <small class="field-error" *ngIf="paymentForm.get('cvv')?.touched && paymentForm.get('cvv')?.hasError('pattern')">CVV must be 3 or 4 digits.</small>
+        <div class="gateway-card">
+          <div class="gateway-icon" aria-hidden="true">🔒</div>
+          <div>
+            <h3>Secure Payment</h3>
+            <p>You will be securely redirected to {{ selectedProviderName }} to complete your payment.</p>
+            <span class="gateway-methods">Available payment options will be shown securely on the provider checkout.</span>
           </div>
         </div>
 
-        <div class="field-group" *ngIf="selectedPaymentMethod === 'CARD'">
-          <label for="cardHolderName">Card Holder Name</label>
-          <input id="cardHolderName" type="text" placeholder="Name" formControlName="cardHolderName" />
-          <small class="field-error" *ngIf="paymentForm.get('cardHolderName')?.touched && paymentForm.get('cardHolderName')?.hasError('required')">Cardholder name is required.</small>
-          <small class="field-error" *ngIf="paymentForm.get('cardHolderName')?.touched && paymentForm.get('cardHolderName')?.hasError('pattern')">Enter a valid name.</small>
+        <div class="handoff-note">
+          <span class="handoff-dot" aria-hidden="true"></span>
+          Choose your preferred payment method securely on the {{ selectedProviderName }} checkout page.
         </div>
-
-        <label class="save-option" *ngIf="selectedPaymentMethod === 'CARD'">
-          <input type="checkbox" formControlName="savePaymentMethod" />
-          <span>Save payment method</span>
-        </label>
 
         <div class="security-box" aria-live="polite">
-          <span class="security-lock">🔒</span>
-          <span>Your payment information is securely processed.</span>
+          <span class="security-lock" aria-hidden="true">🔒</span>
+          <div>
+            <strong>Your payment details stay secure</strong>
+            <span>Finance Tracker does not collect or store card or banking credentials.</span>
+          </div>
         </div>
 
         <div class="submit-area">
           <div class="amount-box">
-            <span>Amount</span>
+            <span>Amount to pay</span>
             <strong>{{ orderSummary.currency }}{{ orderSummary.total.toFixed(2) }}</strong>
           </div>
-
-          <button type="submit" class="pay-button" [disabled]="isPrimaryActionDisabled || isProcessing">
-            <span *ngIf="isProcessing" class="spinner" aria-label="Processing payment"></span>
-            {{ selectedPaymentMethod === 'UPI' && paymentState === 'UPI_VERIFIED' ? 'Pay Securely' : selectedPaymentMethod === 'UPI' ? 'Verify UPI ID' : (isProcessing ? 'Processing...' : 'Pay Securely') }}
+          <button type="submit" class="pay-button" [disabled]="isProcessing || isSubmitted">
+            <span *ngIf="isProcessing" class="spinner" aria-label="Opening secure checkout"></span>
+            {{ isProcessing ? 'Opening secure checkout...' : 'Pay Securely' }}
           </button>
         </div>
 
-        <div
-          class="status-text"
-          [ngClass]="statusTextClass"
-          *ngIf="errorMessage || paymentState === 'PROCESSING' || paymentState === 'VERIFYING_UPI' || paymentState === 'AWAITING_PAYMENT'"
-        >
-          <span *ngIf="paymentState === 'PROCESSING'">Processing transaction...</span>
-          <span *ngIf="paymentState === 'VERIFYING_UPI'">Verifying UPI ID...</span>
-          <span *ngIf="errorMessage">{{ errorMessage }}</span>
+        <div class="status-text" [ngClass]="statusTextClass" *ngIf="errorMessage || isProcessing">
+          <span>{{ errorMessage || 'Preparing your secure checkout...' }}</span>
         </div>
       </form>
     </div>
@@ -161,23 +98,23 @@
 
   <ng-template #resultState>
     <div class="result-state" *ngIf="paymentState === 'SUCCESS'">
-      <div class="result-icon success">✓</div>
+      <div class="result-icon success" aria-hidden="true">✓</div>
+      <p class="eyebrow">Payment complete</p>
       <h2>Payment Successful</h2>
+      <strong class="result-amount">{{ orderSummary.currency }}{{ paymentResponse?.amount?.toFixed(2) }}</strong>
+      <p>Your payment has been successfully processed.</p>
       <div class="result-meta">
         <div><span>Payment ID</span><strong>{{ paymentResponse?.paymentId }}</strong></div>
-        <div><span>Amount</span><strong>{{ orderSummary.currency }}{{ paymentResponse?.amount?.toFixed(2) }}</strong></div>
-        <div><span>Status</span><strong>{{ paymentResponse?.status }}</strong></div>
+        <div><span>Order ID</span><strong>{{ paymentResponse?.orderId }}</strong></div>
       </div>
-      <button type="button" class="pay-button" (click)="goHome()">Back to Home</button>
+      <button type="button" class="pay-button" (click)="goHome()">Continue</button>
     </div>
 
-    <div class="result-state failed-state" *ngIf="paymentState === 'FAILED'">
-      <div class="result-icon failure">!</div>
-      <h2>Payment Failed</h2>
-      <p>We couldn't process your payment.</p>
-      <div class="result-meta">
-        <div><span>Transaction ID</span><strong>{{ paymentResponse?.providerPaymentId || 'N/A' }}</strong></div>
-      </div>
+    <div class="result-state failed-state" *ngIf="paymentState === 'FAILED' || paymentState === 'EXPIRED'">
+      <div class="result-icon failure" aria-hidden="true">!</div>
+      <p class="eyebrow">Payment not completed</p>
+      <h2>{{ paymentState === 'EXPIRED' ? 'Checkout Expired' : 'Payment Failed' }}</h2>
+      <p>{{ paymentState === 'EXPIRED' ? 'Your secure checkout session expired. Please try again.' : 'We couldn\'t complete your payment. Please try again.' }}</p>
       <button type="button" class="pay-button secondary" (click)="resetPaymentState()">Try Again</button>
     </div>
   </ng-template>
