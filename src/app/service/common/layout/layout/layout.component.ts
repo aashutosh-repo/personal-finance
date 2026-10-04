@@ -17,7 +17,19 @@ export class LayoutComponent {
   private router = inject(Router);
 
   isSidebarCollapsed = false;
+  isMobileNavOpen = false;
   lastSelected: string | null = null;
+
+  toggleMobileNav(): void {
+    this.isMobileNavOpen = !this.isMobileNavOpen;
+    if (this.isMobileNavOpen) {
+      this.isSidebarCollapsed = false;
+    }
+  }
+
+  closeMobileNav(): void {
+    this.isMobileNavOpen = false;
+  }
 
   onMenuSelect(menuId: string) {
     // Navigate based on the menu ID
@@ -38,6 +50,7 @@ export class LayoutComponent {
     const route = routeMap[menuId];
     console.log('Layout onMenuSelect:', menuId, '->', route);
     this.lastSelected = menuId;
+    this.closeMobileNav();
     if (route) {
       this.router.navigateByUrl(route);
     }

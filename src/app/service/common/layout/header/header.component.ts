@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, Inject, inject, NgProbeToken, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Inject, inject, Input, OnInit, Output, PLATFORM_ID } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { MatSelectChange } from '@angular/material/select';
@@ -20,6 +20,8 @@ import { isPlatformBrowser } from '@angular/common';
   styleUrls: ['./header.component.css']
 })
 export class HeaderComponent implements  OnInit {
+  @Input() menuOpen = false;
+  @Output() menuToggle = new EventEmitter<void>();
 
   constructor(private dialog: MatDialog,
     private storage: BrowserStorageService,
@@ -66,13 +68,8 @@ export class HeaderComponent implements  OnInit {
     });
   }
   
-  isExpanded = false;
   userDetails: UserResponse | null = null;
   showUserDetails: boolean = false;
-
-  toggleMenu() {
-    this.isExpanded = !this.isExpanded;
-  }
 
   toggleUserDetails() {
     this.showUserDetails = !this.showUserDetails;

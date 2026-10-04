@@ -9,15 +9,8 @@
     <a mat-button>Shortcut</a>
     <a mat-button>About Us</a>
   </nav>
-  <nav class="mobile-nav mobile-nav-dropdown" *ngIf="isExpanded">
-          <mat-option value="home">Home</mat-option>
-          <mat-option value="docs">Documentation</mat-option>
-          <mat-option value="shortcut">Shortcut</mat-option>
-          <mat-option value="about">About Us</mat-option>
-</nav>
-
-<!-- Hamburger icon / button to open mobile nav -->
-<button class="hamburger" (click)="toggleMenu()" *ngIf="isExpanded">
+  <button class="hamburger" type="button" (click)="menuToggle.emit()"
+    [attr.aria-expanded]="menuOpen" aria-label="Toggle navigation">
   ☰
 </button>
     <!-- <div class="mobile-nav">
@@ -37,10 +30,11 @@
     <span class="username"></span>
     <img src="assets/icons/user-icon.svg" alt="User Icon"  class="user-icon"/>
   </div> -->
-    <div class="username-container" *ngIf="authService.isLoggedIn()" (click)="toggleUserDetails()">
+        <button type="button" class="username-container" *ngIf="authService.isLoggedIn()"
+          (click)="toggleUserDetails()" aria-label="Open profile menu">
       <!-- <span class="username">{{ userDetails?.userName }}</span> -->
       <img src="assets/icons/user-icon.svg" alt="User Icon" class="user-icon"/>
-    </div>
+    </button>
   <div class="user-details-dropdown" *ngIf="showUserDetails">
     <p><strong>USERID:</strong> {{ userDetails?.userName }}</p>
     <p><strong>NAME:</strong> {{ userDetails?.firstName }} {{ userDetails?.lastName }}</p>

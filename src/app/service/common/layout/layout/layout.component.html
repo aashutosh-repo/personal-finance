@@ -1,7 +1,9 @@
-<app-header></app-header>
+<app-header [menuOpen]="isMobileNavOpen" (menuToggle)="toggleMobileNav()"></app-header>
 
 <div class="layout-container" [class.sidebar-collapsed]="isSidebarCollapsed">
-  <aside class="sidebar-container">
+    <button *ngIf="isMobileNavOpen" class="mobile-nav-backdrop" type="button"
+      aria-label="Close navigation" (click)="closeMobileNav()"></button>
+    <aside class="sidebar-container" [class.mobile-nav-open]="isMobileNavOpen">
     <app-sidebar
       [isCollapsed]="isSidebarCollapsed"
       (collapsedChange)="isSidebarCollapsed = $event"

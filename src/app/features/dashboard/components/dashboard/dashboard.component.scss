@@ -804,6 +804,16 @@
   font-weight: 700;
 }
 
+.budget-overview-card .cta-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  background: rgba(37, 99, 235, 0.08);
+}
+
 .state-loader {
   width: 18px;
   height: 18px;
@@ -864,6 +874,10 @@
   align-items: center;
 }
 
+.dashboard-scroll-container > .dashboard-grid {
+  display: grid;
+}
+
 @media (max-width: 1024px) {
   .kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -888,5 +902,120 @@
   .dashboard-scroll-container app-investment-chart {
     width: 100%;
     max-width: 100%;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .dashboard-container,
+  .dashboard-scroll-container {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    height: auto;
+    overflow: visible;
+    box-sizing: border-box;
+  }
+
+  .dashboard-scroll-container {
+    padding: 0;
+    margin-top: 0;
+    align-content: start;
+  }
+
+  .dashboard-scroll-container > *,
+  .dashboard-grid,
+  .kpi-section,
+  .kpi-grid,
+  .chart-pair-grid {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .health-content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .card-header h3,
+  .ai-insight-body p,
+  .health-factors li,
+  .transaction-title,
+  .transaction-category,
+  .budget-label,
+  .budget-text {
+    min-width: 0;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  .ai-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ask-ai-button {
+    min-height: 44px;
+    align-self: flex-start;
+  }
+
+  .retry-button,
+  .view-all {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .budget-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .budget-text {
+    text-align: right;
+  }
+
+  .transaction-copy {
+    min-width: 0;
+    width: auto;
+  }
+
+  .transaction-main-row,
+  .transaction-meta-row {
+    min-width: 0;
+    gap: 0.5rem;
+  }
+
+  .transaction-title {
+    flex: 1 1 auto;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .transaction-amount {
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .quick-actions-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard-grid,
+  .kpi-grid,
+  .skeleton-grid,
+  .chart-pair-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

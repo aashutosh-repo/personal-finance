@@ -1,3 +1,10 @@
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
 .page-header {
   width: 100%;
   max-width: 100%;
@@ -34,12 +41,15 @@
 }
 
 .hamburger {
+  display: none;
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
   color: #fff;
   margin-left: 10px;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .mobile-nav {
@@ -95,6 +105,18 @@
   border: 2px solid #ccc;
 }
 
+.username-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+}
+
 .desktop-nav {
   display: flex;
   gap: 10px;
@@ -114,14 +136,18 @@
   margin: 0;                /* remove extra spacing */
 }
 /* On small screens, hide desktop nav and show dropdown */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .desktop-nav {
     display: none;
   }
   .mobile-nav {
-    display: block;
-    min-width: 120px;
-    z-index: 1;
+    display: none;
+  }
+
+  .hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
