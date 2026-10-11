@@ -5,7 +5,7 @@ export const environment = {
     auth: '/api/v1/auth',
     user: '/api/v1/auth/user',
     transactions: '/api/v2/transactions',
-    income: '/api/v1/income',
+    income: '/api/v2/transactions',
     budgets: '/api/v1/budgets',
     analytics: '/api/v1/analytics',
     payments: '/api/payments',

@@ -38,10 +38,10 @@ export class IncomeService {
    * Get income for a specific month
    */
   getIncomeByMonth(userId: number, month: string): Observable<IncomeResponse[]> {
-    return this.http.get<V2TransactionListResponse[]>(this.BASE_URL, {
+    return this.http.get<V2TransactionListResponse>(this.BASE_URL, {
       params: this.listParams(String(userId), month),
       withCredentials: true
-    }).pipe(map(res => res[0]?.transactions.map(tx => this.toIncomeResponse(tx)) || []));
+    }).pipe(map(res => res.transactions.map(tx => this.toIncomeResponse(tx))));
   }
 
   /**
@@ -95,8 +95,7 @@ export class IncomeService {
       amount: Number(incomeData.amount || 0),
       currency: incomeData.currency || 'INR',
       transactionDate: incomeData.incomeDate,
-      sourceType: incomeData.sourceType,
-      incomeDate: incomeData.incomeDate,
+      incomeSource: incomeData.sourceType,
       description: incomeData.description || '' 
     };
   }
@@ -106,8 +105,7 @@ export class IncomeService {
       amount: Number(incomeData.amount || 0),
       transactionDate: incomeData.incomeDate,
       categoryId: 1,
-      sourceType: incomeData.sourceType,
-      incomeDate: incomeData.incomeDate,
+      incomeSource: incomeData.sourceType,
       description: incomeData.description || '' 
     };
   }
@@ -138,8 +136,8 @@ export class IncomeService {
     return new HttpParams()
       .set('userId', userId)
       .set('type', 'INCOME')
-      .set('startDate', '2023-01-01')
-      .set('endDate', '2123-12-31')
+      .set('startDate', range.startDate)
+      .set('endDate', range.endDate)
       .set('pageSize', '100')
       .set('pageNumber', '0')
       .set('sortBy', 'transactionDate')
