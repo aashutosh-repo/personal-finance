@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable, Subject, tap } from 'rxjs';
 import { Transaction, V2Transaction, V2TransactionListResponse } from '../../../model/transaction.model';
-import { environment } from '../../../environments/environment.prod';
+import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth/auth.service';
 import { response } from 'express';
 import { endianness } from 'os';
@@ -12,7 +12,7 @@ import { endianness } from 'os';
 })
 export class TransactionService {
     
-  private baseUrl = environment.apiUrl + '/api/v2/transactions';
+  private baseUrl = `${environment.apiUrl}${environment.apiEndpoints.transactions}`;
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private transactionChangeService = new Subject<void>();

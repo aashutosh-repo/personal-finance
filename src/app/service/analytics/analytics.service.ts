@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment.prod';
+import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 
 export interface CategoryExpense { category: string; amount: number; }
@@ -20,7 +20,7 @@ export interface FinancialContext {
 @Injectable({ providedIn: 'root' })
 export class AnalyticsService {
   private http = inject(HttpClient);
-  private base = environment.apiUrl + '/api/v1/analytics';
+  private base = `${environment.apiUrl}${environment.apiEndpoints.analytics}`;
 
   getMonthlyContext(userId: string, month?: string): Observable<FinancialContext> {
     const params: any = { userId };

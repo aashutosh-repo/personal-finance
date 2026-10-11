@@ -2,13 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UserProfile, UpdateProfileRequest, ChangePasswordRequest, ChangePasswordResponse } from '../../../model/user.model';
-import { environment } from '../../../environments/environment.prod';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private readonly BASE_URL = environment.apiUrl + '/api/v1/auth/user';
+  private readonly BASE_URL = `${environment.apiUrl}${environment.apiEndpoints.user}`;
   private http = inject(HttpClient);
 
   /**

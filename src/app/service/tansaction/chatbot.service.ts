@@ -4,13 +4,13 @@ import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { ChatRequest, ChatResponse } from '../../../model/chatbot.model';
 import { of } from 'rxjs';
-import { environment } from '../../../environments/environment.prod';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChatbotService {
-  private readonly BASE_URL = environment.apiUrl + '/api/bot';
+  private readonly BASE_URL = `${environment.apiUrl}${environment.apiEndpoints.chatbot}`;
   private http = inject(HttpClient);
 
   /**

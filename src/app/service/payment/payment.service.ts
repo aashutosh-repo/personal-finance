@@ -8,7 +8,7 @@ import { PaymentProviderMetadata } from '../../model/payment-provider.model';
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = `${environment.apiUrl}/api/payments`;
+  private readonly baseUrl = `${environment.apiUrl}${environment.apiEndpoints.payments}`;
 
   createPayment(request: PaymentRequest): Observable<Payment> {
     return this.http.post<Payment>(this.baseUrl, request, { withCredentials: true });

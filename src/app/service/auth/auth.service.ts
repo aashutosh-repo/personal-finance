@@ -4,16 +4,16 @@ import { LoginRequest, LoginResponse, RegistrationRequest, RegistrationResponse 
 import { BehaviorSubject, catchError, Observable, tap, throwError, of } from "rxjs";
 import { isPlatformBrowser } from "@angular/common";
 import { BrowserStorageService } from "./BrowserStorageService.service";
-import { environment } from "../../../environments/environment.prod";
+import { environment } from "../../../environments/environment";
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  baseUrl = environment.apiUrl + '/api/v1/auth';
+  baseUrl = `${environment.apiUrl}${environment.apiEndpoints.auth}`;
 
-  private readonly BASE_URL = environment.apiUrl + '/api/v1/auth';
+  private readonly BASE_URL = `${environment.apiUrl}${environment.apiEndpoints.auth}`;
   private readonly TOKEN_KEY = 'auth_token';
   // Prefer cookie-based authentication by default. When true, do not persist tokens to localStorage.
   preferCookieAuth = true;

@@ -3,13 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Budget, BudgetRequest, BudgetResponse, BudgetAlert } from '../../../model/budget.model';
 import { AuthService } from '../auth/auth.service';
-import { environment } from '../../../environments/environment.prod';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BudgetService {
-  private readonly BASE_URL = environment.apiUrl + '/api/v1/budgets';
+  private readonly BASE_URL = `${environment.apiUrl}${environment.apiEndpoints.budgets}`;
   private http = inject(HttpClient);
   private authService = inject(AuthService);
 

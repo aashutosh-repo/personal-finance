@@ -5,6 +5,7 @@ import { MarketPrice } from '../../../model/market-price.model';
 import { StockStatistics } from '../../../model/stock-statistics.model';
 import { TechnicalAnalysis } from '../../../model/technical-analysis.model';
 import { MarketQuote } from '../../../model/market-quote.model';
+import { environment } from '../../../environments/environment';
 
 
 
@@ -13,8 +14,7 @@ import { MarketQuote } from '../../../model/market-quote.model';
 })
 export class StockMarketService {
 
-  private readonly apiUrl =
-    'http://localhost:8080/api/stocks';
+  private readonly apiUrl = `${environment.apiUrl}${environment.apiEndpoints.stocks}`;
 
   constructor(
     private readonly http: HttpClient
@@ -62,7 +62,7 @@ export class StockMarketService {
   getTechnicalAnalysis(symbol: string, from: string, to: string, period = 14): Observable<TechnicalAnalysis> {
     const params = new HttpParams().set('from', from).set('to', to).set('period', period);
     return this.http.post<TechnicalAnalysis>(
-      `http://localhost:8080/api/v1/stocks/${symbol}/technical`,
+      `${environment.apiUrl}${environment.apiEndpoints.stockAnalysis}/${symbol}/technical`,
       null,
       { params, withCredentials: true }
     );

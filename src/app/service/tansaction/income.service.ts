@@ -3,14 +3,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { Income, IncomeRequest, IncomeResponse, IncomeSummary } from '../../../model/budget.model';
 import { AuthService } from '../auth/auth.service';
-import { environment } from '../../../environments/environment.prod';
+import { environment } from '../../../environments/environment';
 import { V2Transaction, V2TransactionListResponse } from '../../../model/transaction.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class IncomeService {
-  private readonly BASE_URL = environment.apiUrl + '/api/v1/income';
+  private readonly BASE_URL = `${environment.apiUrl}${environment.apiEndpoints.income}`;
   private http = inject(HttpClient);
   authService = inject(AuthService);
 

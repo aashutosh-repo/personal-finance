@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Company } from '../../../model/company.model';
 import { CreateCompanyRequest } from '../../../model/create-company-request.model';
+import { environment } from '../../../environments/environment';
 
 
 @Injectable({
@@ -10,8 +11,7 @@ import { CreateCompanyRequest } from '../../../model/create-company-request.mode
 })
 export class StockCompanyService {
 
-  private readonly apiUrl =
-    'http://localhost:8080/api/stocks/companies';
+  private readonly apiUrl = `${environment.apiUrl}${environment.apiEndpoints.stocks}/companies`;
 
 
   constructor(

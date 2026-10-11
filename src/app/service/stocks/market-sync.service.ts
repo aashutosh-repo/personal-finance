@@ -2,13 +2,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { MarketSyncJobResponse, SyncJobPageResponse, SyncJobResponse } from '../../model/sync-job.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MarketSyncService {
-  private readonly baseUrl = 'http://localhost:8080/api/stocks';
-  private readonly syncJobUrl = 'http://localhost:8080/api/stocks/sync-jobs';
+  private readonly baseUrl = `${environment.apiUrl}${environment.apiEndpoints.stocks}`;
+  private readonly syncJobUrl = `${environment.apiUrl}${environment.apiEndpoints.stockSyncJobs}`;
 
   constructor(private readonly http: HttpClient) {}
 
