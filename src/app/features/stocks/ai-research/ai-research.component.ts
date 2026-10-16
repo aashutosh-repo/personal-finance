@@ -24,6 +24,9 @@ export class AiResearchComponent implements OnDestroy{
   readonly sources = signal<string[] | null>([]);
   readonly grounded = signal<boolean | null>(null);
   readonly groundingIssue = signal<string[] | null>([]);
+  readonly analysisStatus = signal<'SUCCESS' | 'PARTIAL' | 'ERROR' | null>(null);
+  readonly dataQualityLimitations = signal<string[] | null>([]);
+  readonly providerClassification = signal<'SYNTHETIC' | 'PROVIDER_SOURCED' | 'UNKNOWN' | null>(null);
   readonly error = signal<string | null>(null);
 
   readonly jobId = signal<string | null>(null);
@@ -75,6 +78,9 @@ export class AiResearchComponent implements OnDestroy{
         this.sources.set(res.sources || []);
         this.grounded.set(res.grounded ?? null);
         this.groundingIssue.set(res.grounding_issues || []);
+        this.analysisStatus.set(res.status ?? null);
+        this.dataQualityLimitations.set(res.data_quality_limitations || []);
+        this.providerClassification.set(res.provider_metadata?.[0]?.data_classification || null);
         this.loading.set(false);
       }, 
       error: (err) => {
@@ -112,6 +118,9 @@ export class AiResearchComponent implements OnDestroy{
             this.toolIsUsed.set(job.tools_used || [])
             this.sources.set(job.source || []);
             this.grounded.set(job.grounded ?? null);
+            this.analysisStatus.set(job.analysis_status ?? null);
+            this.dataQualityLimitations.set(job.data_quality_limitations || []);
+            this.providerClassification.set(job.provider_metadata?.[0]?.data_classification || null);
             this.loading.set(false);
             this.pollSub?.unsubscribe();
           }
@@ -131,6 +140,9 @@ export class AiResearchComponent implements OnDestroy{
     this.sources.set([])
     this.grounded.set(null);
     this.groundingIssue.set(null);
+    this.analysisStatus.set(null);
+    this.dataQualityLimitations.set([]);
+    this.providerClassification.set(null);
     this.error.set(null);
     this.jobId.set(null);
     this.jobStatus.set(null);

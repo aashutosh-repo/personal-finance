@@ -128,6 +128,11 @@ export interface AiChatResponse {
   grounded?: boolean;
   grounding_issues?: string[];
   sources?: string[]
+  status?: 'SUCCESS' | 'PARTIAL' | 'ERROR';
+  evidence_sufficient?: boolean;
+  data_quality_limitations?: string[];
+  synthetic_data?: boolean;
+  provider_metadata?: Array<{ tool_name?: string; provider?: string | null; data_classification?: 'SYNTHETIC' | 'PROVIDER_SOURCED' | 'UNKNOWN'; synthetic_data?: boolean }>;
 }
 
 export interface AiJobSubmitResponse {
@@ -145,6 +150,11 @@ export interface AiJobStatusResponse {
   tools_used?: string[]
   source?: string[];
   grounded?: boolean;
+  analysis_status?: 'SUCCESS' | 'PARTIAL' | 'ERROR';
+  evidence_sufficient?: boolean;
+  data_quality_limitations?: string[];
+  synthetic_data?: boolean;
+  provider_metadata?: Array<{ tool_name?: string; provider?: string | null; data_classification?: 'SYNTHETIC' | 'PROVIDER_SOURCED' | 'UNKNOWN'; synthetic_data?: boolean }>;
   created_At?: string;
   updated_At?: string;
 }
