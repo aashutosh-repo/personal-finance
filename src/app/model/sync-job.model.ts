@@ -11,6 +11,8 @@ export interface SyncJobResponse {
   errorMessage: string | null;
   startedAt: string | null;
   completedAt: string | null;
+  dataClassification?: 'SYNTHETIC' | 'PROVIDER_SOURCED' | 'UNKNOWN';
+  dataQualityWarnings?: string[];
 }
 
 export interface SyncJobPageResponse {
@@ -25,4 +27,7 @@ export interface MarketSyncJobResponse {
   jobId: string;
   status: string;
   message: string;
+  provider?: string;
+  dataClassification?: 'SYNTHETIC' | 'PROVIDER_SOURCED' | 'UNKNOWN';
+  dataQualityWarnings?: string[];
 }

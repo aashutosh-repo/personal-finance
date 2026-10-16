@@ -6,4 +6,6 @@ export interface MarketPrice {
   close: number;
   volume: number;
   source: string;
+  dataClassification?: 'SYNTHETIC' | 'PROVIDER_SOURCED' | 'UNKNOWN';
+  dataQualityWarnings?: string[];
 }

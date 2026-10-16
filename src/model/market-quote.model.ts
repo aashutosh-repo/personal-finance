@@ -12,5 +12,8 @@ export interface MarketQuote {
   marketTime: string;
   fetchedAt: string;
   source: string;
+  dataClassification?: 'SYNTHETIC' | 'PROVIDER_SOURCED' | 'UNKNOWN';
+  currency?: string | null;
+  dataQualityWarnings?: string[];
   marketStatus: 'OPEN' | 'CLOSED' | string;
 }

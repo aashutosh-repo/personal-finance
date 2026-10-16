@@ -12,5 +12,10 @@ export interface StockStatistics {
   averagePrice: number;
 
   priceChange: number;
-  percentageChange: number;
+  priceChangePercentage: number | null;
+  provider?: string | null;
+  dataClassification?: 'SYNTHETIC' | 'PROVIDER_SOURCED' | 'UNKNOWN';
+  actualFromDate?: string | null;
+  actualToDate?: string | null;
+  dataQualityWarnings?: string[];
 }
