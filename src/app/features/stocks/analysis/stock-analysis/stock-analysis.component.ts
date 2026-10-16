@@ -39,6 +39,9 @@ export class StockAnalysisComponent implements OnInit, OnDestroy {
   loadingAi = false;
   aiError = false;
   aiResponse = '';
+  aiDataClassification: 'SYNTHETIC' | 'PROVIDER_SOURCED' | 'UNKNOWN' | null = null;
+  aiDataQualityWarnings: string[] = [];
+  dataQualityWarnings: string[] = [];
   errorMessage = '';
   chartData: ChartConfiguration<'line'>['data'] = { labels: [], datasets: [] };
   chartOptions: ChartConfiguration<'line'>['options'] = {
@@ -93,6 +96,9 @@ export class StockAnalysisComponent implements OnInit, OnDestroy {
     this.quote = null;
     this.quoteSubscription?.unsubscribe();
     this.aiResponse = '';
+    this.aiDataClassification = null;
+    this.aiDataQualityWarnings = [];
+    this.dataQualityWarnings = [];
     this.aiError = false;
 
     if (!this.selectedSymbol) { this.errorMessage = 'Select a stock to continue.'; return; }
@@ -109,6 +115,10 @@ export class StockAnalysisComponent implements OnInit, OnDestroy {
         this.statistics = result.statistics;
         this.prices = result.prices;
         this.technical = result.technical;
+        this.dataQualityWarnings = [...new Set([
+          ...(result.statistics.dataQualityWarnings || []),
+          ...(result.technical.dataQualityWarnings || [])
+        ])];
         this.setChartData();
         this.startQuotePolling();
         this.loadingAnalysis = false;
@@ -129,6 +139,8 @@ export class StockAnalysisComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (response) => {
         this.aiResponse = response.response || '';
+        this.aiDataClassification = response.provider_metadata?.[0]?.data_classification || 'UNKNOWN';
+        this.aiDataQualityWarnings = response.data_quality_limitations || [];
         this.aiError = !this.aiResponse;
         this.loadingAi = false;
       },
@@ -138,7 +150,8 @@ export class StockAnalysisComponent implements OnInit, OnDestroy {
 
   getPerformanceClass(): string {
     if (!this.statistics) return '';
-    return this.statistics.percentageChange > 0 ? 'positive' : this.statistics.percentageChange < 0 ? 'negative' : 'neutral';
+    if (this.statistics.priceChangePercentage === null) return 'neutral';
+    return this.statistics.priceChangePercentage > 0 ? 'positive' : this.statistics.priceChangePercentage < 0 ? 'negative' : 'neutral';
   }
 
   getSelectedCompany(): Company | undefined {
@@ -182,7 +195,13 @@ export class StockAnalysisComponent implements OnInit, OnDestroy {
   getQuoteStatusLabel(): string {
     return this.quoteStatus === 'updating'
       ? 'Updating'
-      : this.quoteStatus === 'live' ? 'Live' : 'Update unavailable';
+      : this.quoteStatus === 'live' ? 'Available' : 'Update unavailable';
+  }
+
+  getMarketDataClassification(): 'SYNTHETIC' | 'PROVIDER_SOURCED' | 'UNKNOWN' {
+    const classifications = [...new Set(this.prices.map((price) => price.dataClassification || 'UNKNOWN'))];
+    if (classifications.length !== 1) return 'UNKNOWN';
+    return classifications[0];
   }
 
   formatQuoteTime(value: string): string {

@@ -26,4 +26,9 @@ export interface TechnicalAnalysis {
   volatility?: number | null;
   volumeTrend?: number | null;
   trend?: string | null;
+  provider?: string | null;
+  dataClassification?: 'SYNTHETIC' | 'PROVIDER_SOURCED' | 'UNKNOWN';
+  actualFromDate?: string | null;
+  actualToDate?: string | null;
+  dataQualityWarnings?: string[];
 }
